@@ -1,0 +1,4 @@
+.next
+.vscode
+out
+-out/.nojekyll
