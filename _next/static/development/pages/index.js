@@ -16,11 +16,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _data_PlaylistStore__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../data/PlaylistStore */ "./data/PlaylistStore.js");
 /* harmony import */ var _components_Tag__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../components/Tag */ "./components/Tag.js");
 /* harmony import */ var _CollectionListItem__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./CollectionListItem */ "./components/CollectionListItem.js");
-/* harmony import */ var react_virtualized__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! react-virtualized */ "./node_modules/react-virtualized/dist/es/index.js");
-/* harmony import */ var _data_UIStore__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ../data/UIStore */ "./data/UIStore.js");
-/* harmony import */ var _ResizeHandle__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./ResizeHandle */ "./components/ResizeHandle.js");
-/* harmony import */ var react_select__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.esm.js");
-/* harmony import */ var _Table__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Table */ "./components/Table.js");
+/* harmony import */ var _data_UIStore__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../data/UIStore */ "./data/UIStore.js");
+/* harmony import */ var _ResizeHandle__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ResizeHandle */ "./components/ResizeHandle.js");
+/* harmony import */ var react_select__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! react-select */ "./node_modules/react-select/dist/react-select.esm.js");
+/* harmony import */ var _Table__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./Table */ "./components/Table.js");
 var _jsxFileName = "/Users/byron/dev/tagify/components/App.js";
 
 
@@ -59,7 +58,6 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 
 
-
 /* harmony default export */ __webpack_exports__["default"] = (Object(mobx_react__WEBPACK_IMPORTED_MODULE_1__["observer"])(
 /*#__PURE__*/
 function (_React$Component) {
@@ -73,7 +71,7 @@ function (_React$Component) {
     _this = _possibleConstructorReturn(this, _getPrototypeOf(App).call(this, props));
     _this.playlistStore = new _data_PlaylistStore__WEBPACK_IMPORTED_MODULE_3__["default"]();
     window.playlistStore = _this.playlistStore;
-    _this.uiStore = new _data_UIStore__WEBPACK_IMPORTED_MODULE_7__["default"]();
+    _this.uiStore = new _data_UIStore__WEBPACK_IMPORTED_MODULE_6__["default"]();
     window.uiStore = _this.uiStore;
     return _this;
   }
@@ -90,13 +88,13 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 31
+          lineNumber: 25
         },
         __self: this
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 32
+          lineNumber: 26
         },
         __self: this
       }, "header"), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -107,7 +105,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 33
+          lineNumber: 27
         },
         __self: this
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -119,7 +117,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 40
+          lineNumber: 34
         },
         __self: this
       }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -129,7 +127,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 48
+          lineNumber: 42
         },
         __self: this
       }, [{
@@ -145,11 +143,11 @@ function (_React$Component) {
           name: p.name,
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 59
+            lineNumber: 53
           },
           __self: this
         });
-      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_ResizeHandle__WEBPACK_IMPORTED_MODULE_8__["default"], {
+      })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_ResizeHandle__WEBPACK_IMPORTED_MODULE_7__["default"], {
         onResize: function onResize(delta) {
           _this2.uiStore.state.sidebarWidth = _this2.uiStore.state.sidebarWidth + delta;
         },
@@ -163,7 +161,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 74
+          lineNumber: 68
         },
         __self: this
       })), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
@@ -173,15 +171,15 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 89
+          lineNumber: 83
         },
         __self: this
-      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Table__WEBPACK_IMPORTED_MODULE_10__["default"], {
+      }, react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Table__WEBPACK_IMPORTED_MODULE_9__["default"], {
         uiStore: this.uiStore,
         playlistStore: this.playlistStore,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 95
+          lineNumber: 89
         },
         __self: this
       }))));
@@ -234,7 +232,7 @@ function _objectWithoutPropertiesLoose(source, excluded) { if (source == null) r
     __self: this
   }), name, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(styled_jsx_style__WEBPACK_IMPORTED_MODULE_0___default.a, {
     styleId: "3048482013",
-    css: ".root.jsx-3048482013:hover{background:gray;}.root.selected.jsx-3048482013{background:black;color:white;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9ieXJvbi9kZXYvdGFnaWZ5L2NvbXBvbmVudHMvQ29sbGVjdGlvbkxpc3RJdGVtLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQVNnQixBQUd5QixBQUlDLGdCQUhuQixDQUljLFlBQ2QiLCJmaWxlIjoiL1VzZXJzL2J5cm9uL2Rldi90YWdpZnkvY29tcG9uZW50cy9Db2xsZWN0aW9uTGlzdEl0ZW0uanMiLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgZGVmYXVsdCAoeyBuYW1lLCBzZWxlY3RlZCwgLi4ucmVzdCB9KSA9PiAoXG4gIDxkaXZcbiAgICBjbGFzc05hbWU9e2Byb290ICR7c2VsZWN0ZWQgPyBcInNlbGVjdGVkXCIgOiBcIlwifWB9XG4gICAgc3R5bGU9e3tcbiAgICAgIHBhZGRpbmc6IFwiNHB4IDhweFwiXG4gICAgfX1cbiAgICB7Li4ucmVzdH1cbiAgPlxuICAgIHtuYW1lfVxuICAgIDxzdHlsZSBqc3g+e2BcbiAgICAgIC5yb290OmhvdmVyIHtcbiAgICAgICAgYmFja2dyb3VuZDogZ3JheTtcbiAgICAgIH1cblxuICAgICAgLnJvb3Quc2VsZWN0ZWQge1xuICAgICAgICBiYWNrZ3JvdW5kOiBibGFjaztcbiAgICAgICAgY29sb3I6IHdoaXRlO1xuICAgICAgfVxuICAgIGB9PC9zdHlsZT5cbiAgPC9kaXY+XG4pO1xuIl19 */\n/*@ sourceURL=/Users/byron/dev/tagify/components/CollectionListItem.js */",
+    css: ".root.jsx-3048482013:hover{background:gray;}.root.selected.jsx-3048482013{background:black;color:white;}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIi9Vc2Vycy9ieXJvbi9kZXYvdGFnaWZ5L2NvbXBvbmVudHMvQ29sbGVjdGlvbkxpc3RJdGVtLmpzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQVNnQixBQUd5QixBQUlDLGdCQUhuQixDQUljLFlBQ2QiLCJmaWxlIjoiL1VzZXJzL2J5cm9uL2Rldi90YWdpZnkvY29tcG9uZW50cy9Db2xsZWN0aW9uTGlzdEl0ZW0uanMiLCJzb3VyY2VzQ29udGVudCI6WyJleHBvcnQgZGVmYXVsdCAoeyBuYW1lLCBzZWxlY3RlZCwgLi4ucmVzdCB9KSA9PiAoXG4gIDxkaXZcbiAgICBjbGFzc05hbWU9e2Byb290ICR7c2VsZWN0ZWQgPyBcInNlbGVjdGVkXCIgOiBcIlwifWB9XG4gICAgc3R5bGU9e3tcbiAgICAgIHBhZGRpbmc6IFwiNHB4IDhweFwiLFxuICAgIH19XG4gICAgey4uLnJlc3R9XG4gID5cbiAgICB7bmFtZX1cbiAgICA8c3R5bGUganN4PntgXG4gICAgICAucm9vdDpob3ZlciB7XG4gICAgICAgIGJhY2tncm91bmQ6IGdyYXk7XG4gICAgICB9XG5cbiAgICAgIC5yb290LnNlbGVjdGVkIHtcbiAgICAgICAgYmFja2dyb3VuZDogYmxhY2s7XG4gICAgICAgIGNvbG9yOiB3aGl0ZTtcbiAgICAgIH1cbiAgICBgfTwvc3R5bGU+XG4gIDwvZGl2PlxuKTtcbiJdfQ== */\n/*@ sourceURL=/Users/byron/dev/tagify/components/CollectionListItem.js */",
     __self: this
   }));
 });
