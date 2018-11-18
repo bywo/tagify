@@ -1,5 +1,4 @@
 .next
 .vscode
-out/*
-!out/.nojekyll
+out
 node_modules
