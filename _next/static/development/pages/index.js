@@ -310,7 +310,7 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl, "/callback&scope=streaming%20playlist-modify-private%20playlist-modify-public"),
+        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl + ( false ? undefined : ""), "/callback&scope=streaming%20playlist-modify-private%20playlist-modify-public"),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 10
