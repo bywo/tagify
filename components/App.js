@@ -3,12 +3,6 @@ import { reaction } from "mobx";
 import PlaylistStore from "../data/PlaylistStore";
 import Tag from "../components/Tag";
 import CollectionListItem from "./CollectionListItem";
-import {
-  List,
-  AutoSizer,
-  CellMeasurer,
-  CellMeasurerCache
-} from "react-virtualized";
 import UIStore from "../data/UIStore";
 import ResizeHandle from "./ResizeHandle";
 import Select from "react-select";
@@ -34,7 +28,7 @@ export default observer(
             style={{
               display: "flex",
               alignItems: "stretch",
-              flexGrow: 1
+              flexGrow: 1,
             }}
           >
             <div
@@ -42,18 +36,18 @@ export default observer(
                 display: "flex",
                 alignItems: "stretch",
                 width: this.uiStore.state.sidebarWidth,
-                position: "relative"
+                position: "relative",
               }}
             >
               <div
                 style={{
                   flexGrow: "1",
-                  overflow: "auto"
+                  overflow: "auto",
                 }}
               >
                 {[
                   { id: "all", name: "All songs" },
-                  ...this.playlistStore.playlists
+                  ...this.playlistStore.playlists,
                 ].map(p => {
                   return (
                     <CollectionListItem
@@ -82,14 +76,14 @@ export default observer(
                   width: 5,
                   top: 0,
                   height: "100vh",
-                  background: "gray"
+                  background: "gray",
                 }}
               />
             </div>
             <div
               style={{
                 overflow: "auto",
-                paddingLeft: this.uiStore.state.panelGutter
+                paddingLeft: this.uiStore.state.panelGutter,
               }}
             >
               <Table
@@ -101,5 +95,5 @@ export default observer(
         </div>
       );
     }
-  }
+  },
 );
