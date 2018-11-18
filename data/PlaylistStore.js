@@ -15,7 +15,6 @@ export default class PlaylistStore {
     this.user = {};
 
     this.playlists.observe(changeData => {
-      console.log("changedata", changeData);
       if (changeData.type === "splice") {
         changeData.added.forEach(p => {
           this.fetchTracks(p.id, p.tracks.href);
@@ -42,10 +41,9 @@ export default class PlaylistStore {
     const { next, items } = await resp.json();
     this.playlists.push(...items);
 
-    // if (next) {
-    //   console.log("calling next", next);
-    //   this.fetchPlaylists(next);
-    // }
+    if (next) {
+      this.fetchPlaylists(next);
+    }
   }
 
   async fetchTracks(playlistId, url) {
@@ -65,9 +63,9 @@ export default class PlaylistStore {
 
     this.searchState.numFetches -= 1;
 
-    // if (next) {
-    //   this.fetchTracks(playlistId, next);
-    // }
+    if (next) {
+      this.fetchTracks(playlistId, next);
+    }
   }
 
   get playlistsById() {
@@ -93,7 +91,6 @@ export default class PlaylistStore {
   }
 
   get tagsByTrack() {
-    console.log("computing tagsByTrack");
     const ret = {};
 
     _.forEach(this.tracksByPlaylist, (tracks, playlistId) => {
@@ -163,22 +160,22 @@ export default class PlaylistStore {
   };
 
   removeTag = async (trackUri, playlistId) => {
-    // const resp = await fetch(
-    //   `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-    //   {
-    //     method: "DELETE",
-    //     body: JSON.stringify({
-    //       tracks: [{ uri: trackUri }]
-    //     })
-    //   }
-    // );
+    const resp = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({
+          tracks: [{ uri: trackUri }],
+        }),
+      },
+    );
 
-    // if (resp.ok) {
-    this.tracksByPlaylist[playlistId] = this.tracksByPlaylist[
-      playlistId
-    ].filter(t => t.track.uri !== trackUri);
-    // } else {
-    // }
+    if (resp.ok) {
+      this.tracksByPlaylist[playlistId] = this.tracksByPlaylist[
+        playlistId
+      ].filter(t => t.track.uri !== trackUri);
+    } else {
+    }
   };
 
   createTagWithTrack = async (trackUri, playlistName) => {

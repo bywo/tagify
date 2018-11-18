@@ -1,19 +1,9 @@
-import {
-  List,
-  AutoSizer,
-  CellMeasurer,
-  CellMeasurerCache,
-} from "react-virtualized";
+import { CellMeasurer } from "react-virtualized";
 import CreatableSelect from "react-select/lib/Creatable";
-import randomMC from "random-material-color";
 
 export default class TableRow extends React.Component {
-  componentWillMount() {
-    console.log("willMount");
-  }
-
   shouldComponentUpdate(nextProps) {
-    console.log("shouldUpdate", this.props.track.name, nextProps.track.name);
+    // console.log("shouldUpdate", this.props.track.name, nextProps.track.name);
     if (this.props.track.uri !== nextProps.track.uri) {
       return true;
     }
@@ -34,7 +24,7 @@ export default class TableRow extends React.Component {
       return true;
     }
 
-    console.log("return false");
+    // console.log("return false");
     return false;
   }
 
