@@ -10,7 +10,7 @@ export default class PlaylistStore {
     this.searchState = observable({
       query: "",
       selectedPlaylistId: "all",
-      numFetches: 0
+      numFetches: 0,
     });
     this.user = {};
 
@@ -34,7 +34,7 @@ export default class PlaylistStore {
   }
 
   async fetchPlaylists(
-    url = "https://api.spotify.com/v1/me/playlists?limit=50"
+    url = "https://api.spotify.com/v1/me/playlists?limit=50",
   ) {
     this.searchState.numFetches += 1;
     const resp = await fetch(url);
@@ -86,9 +86,9 @@ export default class PlaylistStore {
     return _.sortBy(
       _.uniqBy(
         _.flatten(Object.values(this.tracksByPlaylist)),
-        t => t.track.uri
+        t => t.track.uri,
       ),
-      t => t.track.name
+      t => t.track.name,
     );
   }
 
@@ -139,9 +139,9 @@ export default class PlaylistStore {
       {
         method: "POST",
         body: JSON.stringify({
-          uris: [trackUri]
-        })
-      }
+          uris: [trackUri],
+        }),
+      },
     );
 
     if (resp.ok) {
@@ -188,9 +188,9 @@ export default class PlaylistStore {
         method: "POST",
         body: JSON.stringify({
           name: playlistName,
-          description: "Created by Tagify."
-        })
-      }
+          description: "Created by Tagify.",
+        }),
+      },
     );
     if (!resp.ok) {
       throw new Error("Couldn't create tag");
@@ -208,5 +208,5 @@ decorate(PlaylistStore, {
   playlistIds: computed,
   allTracks: computed,
   tagsByTrack: computed,
-  filteredTracks: computed
+  filteredTracks: computed,
 });

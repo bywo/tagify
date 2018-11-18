@@ -4,7 +4,7 @@ import {
   List,
   AutoSizer,
   CellMeasurer,
-  CellMeasurerCache
+  CellMeasurerCache,
 } from "react-virtualized";
 import ResizeHandle from "./ResizeHandle";
 import TableRow from "./TableRow";
@@ -20,7 +20,7 @@ class Table extends React.Component {
       keyMapper: rowIndex => {
         const track = this.props.playlistStore.filteredTracks[rowIndex].track;
         return track.uri;
-      }
+      },
     });
 
     reaction(
@@ -30,7 +30,7 @@ class Table extends React.Component {
         this.props.uiStore.mainPanelWidth,
       () => {
         this._cache.clearAll();
-      }
+      },
     );
 
     // reaction(
@@ -48,7 +48,7 @@ class Table extends React.Component {
         console.log("query reaction");
         this._cache.clearAll();
         this.listRef && this.listRef.forceUpdate();
-      }
+      },
     );
   }
   render() {
@@ -76,7 +76,7 @@ class Table extends React.Component {
           <div
             style={{
               position: "relative",
-              width: this.props.uiStore.state.trackColWidth
+              width: this.props.uiStore.state.trackColWidth,
             }}
           >
             Title
@@ -90,14 +90,14 @@ class Table extends React.Component {
                 width: 5,
                 top: 0,
                 height: "100%",
-                background: "gray"
+                background: "gray",
               }}
             />
           </div>
           <div
             style={{
               position: "relative",
-              width: this.props.uiStore.state.artistColWidth
+              width: this.props.uiStore.state.artistColWidth,
             }}
           >
             Artist
@@ -111,7 +111,7 @@ class Table extends React.Component {
                 width: 5,
                 top: 0,
                 height: "100%",
-                background: "gray"
+                background: "gray",
               }}
             />
           </div>
@@ -128,7 +128,7 @@ class Table extends React.Component {
             const t = filteredList[index];
             const identifier = t.track.uri;
             const tags = tagsByTrack[identifier].map(
-              playlistId => this.tagSelectOptionsMap[playlistId]
+              playlistId => this.tagSelectOptionsMap[playlistId],
             );
 
             return (
@@ -161,7 +161,7 @@ class Table extends React.Component {
     return _.map(this.props.playlistStore.playlistsById, (p, id) => ({
       label: p.name,
       value: id,
-      color: randomMC.getColor({ text: id })
+      color: randomMC.getColor({ text: id }),
     }));
   }
 
@@ -171,7 +171,7 @@ class Table extends React.Component {
 }
 decorate(Table, {
   tagSelectOptions: computed,
-  tagSelectOptionsMap: computed
+  tagSelectOptionsMap: computed,
 });
 
 export default observer(Table);

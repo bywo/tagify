@@ -2,7 +2,7 @@ import {
   List,
   AutoSizer,
   CellMeasurer,
-  CellMeasurerCache
+  CellMeasurerCache,
 } from "react-virtualized";
 import CreatableSelect from "react-select/lib/Creatable";
 import randomMC from "random-material-color";
@@ -50,14 +50,14 @@ export default class TableRow extends React.Component {
           style={{
             display: "flex",
             borderBottom: "solid 1px gray",
-            alignItems: "baseline"
+            alignItems: "baseline",
           }}
         >
           <div
             style={{
               flexShrink: "0",
               width: this.props.trackColWidth,
-              padding: "4px"
+              padding: "4px",
             }}
           >
             {this.props.track.name}
@@ -66,7 +66,7 @@ export default class TableRow extends React.Component {
             style={{
               flexShrink: "0",
               width: this.props.artistColWidth,
-              padding: "4px"
+              padding: "4px",
             }}
           >
             {this.props.track.artists.map((a, index) => (
@@ -79,7 +79,7 @@ export default class TableRow extends React.Component {
           <div
             style={{
               flexGrow: "1",
-              padding: "4px"
+              padding: "4px",
             }}
           >
             <CreatableSelect
@@ -108,16 +108,16 @@ export default class TableRow extends React.Component {
               styles={{
                 multiValue: (styles, { data }) => ({
                   ...styles,
-                  backgroundColor: data.color
+                  backgroundColor: data.color,
                 }),
                 multiValueLabel: styles => ({
                   ...styles,
-                  color: "white"
+                  color: "white",
                 }),
                 multiValueRemove: styles => ({
                   ...styles,
-                  color: "white"
-                })
+                  color: "white",
+                }),
               }}
             />
           </div>

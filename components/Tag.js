@@ -10,7 +10,7 @@ export default ({ id, name, style }) => (
       color: "white",
       background: randomMC.getColor({ text: id }),
       whiteSpace: "nowrap",
-      ...style
+      ...style,
     }}
   >
     {name}

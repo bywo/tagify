@@ -15,7 +15,7 @@ export default class UIStore {
     windowHeight: window.innerHeight,
     sidebarWidth: 200,
     trackColWidth: 180,
-    artistColWidth: 180
+    artistColWidth: 180,
   });
 
   get mainPanelWidth() {
@@ -26,5 +26,5 @@ export default class UIStore {
 }
 
 decorate(UIStore, {
-  mainPanelWidth: computed
+  mainPanelWidth: computed,
 });

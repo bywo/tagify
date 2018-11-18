@@ -2,7 +2,7 @@ export default ({ name, selected, ...rest }) => (
   <div
     className={`root ${selected ? "selected" : ""}`}
     style={{
-      padding: "4px 8px"
+      padding: "4px 8px",
     }}
     {...rest}
   >
