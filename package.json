@@ -7,8 +7,12 @@
     "dev": "next",
     "build": "next build",
     "start": "next start",
-    "export": "next build && next export && gh-pages -d out",
-    "pre-commit": "prettier --write '**/*.{js,ts}"
+    "export": "next build && next export && gh-pages -d out"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "prettier --write '**/*.{js,ts}'"
+    }
   },
   "dependencies": {
     "@zeit/next-css": "^1.0.1",
