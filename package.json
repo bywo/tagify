@@ -23,6 +23,7 @@
     "mobx-react": "^5.3.6",
     "next": "^7.0.2",
     "normalize.css": "^8.0.1",
+    "prop-types": "^15.6.2",
     "random-material-color": "^1.0.3",
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
@@ -30,6 +31,13 @@
     "react-virtualized": "^9.21.0"
   },
   "devDependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.9.0",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-prettier": "^3.3.0",
+    "eslint-plugin-import": "^2.14.0",
+    "eslint-plugin-jsx-a11y": "^6.1.1",
+    "eslint-plugin-react": "^7.11.0",
     "prettier": "^1.15.2"
   }
 }

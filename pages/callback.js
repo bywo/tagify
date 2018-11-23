@@ -1,5 +1,6 @@
 import Router from "next/router";
 import * as token from "../util/token";
+import as from "../util/as";
 
 export default class SpotifyAuth extends React.Component {
   componentDidMount() {
@@ -8,7 +9,8 @@ export default class SpotifyAuth extends React.Component {
     if (matches) {
       token.set(matches[1]);
       console.log("aobut to replace");
-      Router.push("/");
+      const path = "/";
+      Router.push(path, as(path));
     }
   }
 

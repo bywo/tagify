@@ -1,6 +1,6 @@
-import fetch from "../util/fetch";
 import { observable, autorun, computed, decorate } from "mobx";
 import _ from "lodash";
+import fetch from "../util/fetch";
 
 export default class PlaylistStore {
   constructor() {
@@ -120,9 +120,7 @@ export default class PlaylistStore {
           const query = this.searchState.query.toLowerCase();
           return (
             t.track.name.toLowerCase().includes(query) ||
-            _.some(t.track.artists, a => {
-              return a.name.toLowerCase().includes(query);
-            })
+            _.some(t.track.artists, a => a.name.toLowerCase().includes(query))
           );
         })
       : tracksForSelectedList;

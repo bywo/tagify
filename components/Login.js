@@ -1,3 +1,5 @@
+import as from "../util/as";
+
 export default class Login extends React.Component {
   state = { baseUrl: "" };
 
@@ -8,9 +10,11 @@ export default class Login extends React.Component {
   render() {
     return (
       <a
-        href={`https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=${
-          this.state.baseUrl
-        }/callback&scope=streaming%20playlist-modify-private%20playlist-modify-public`}
+        href={`https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=${this
+          .state.baseUrl +
+          as(
+            "/callback",
+          )}&scope=streaming%20playlist-modify-private%20playlist-modify-public`}
       >
         Login to Spotify
       </a>

@@ -1,12 +1,10 @@
+import React from "react";
 import { observer } from "mobx-react";
-import { reaction } from "mobx";
 import PlaylistStore from "../data/PlaylistStore";
-import Tag from "../components/Tag";
 import CollectionListItem from "./CollectionListItem";
 import UIStore from "../data/UIStore";
 import ResizeHandle from "./ResizeHandle";
-import Select from "react-select";
-import Table from "./Table";
+import MainPane from "./MainPane";
 
 export default observer(
   class App extends React.Component {
@@ -22,7 +20,9 @@ export default observer(
 
     render() {
       return (
-        <div style={{ height: "100vh", flexDirection: "column" }}>
+        <div
+          style={{ height: "100vh", display: "flex", flexDirection: "column" }}
+        >
           <div>header</div>
           <div
             style={{
@@ -36,6 +36,7 @@ export default observer(
                 display: "flex",
                 alignItems: "stretch",
                 width: this.uiStore.state.sidebarWidth,
+                flexShrink: "0",
                 position: "relative",
               }}
             >
@@ -48,22 +49,18 @@ export default observer(
                 {[
                   { id: "all", name: "All songs" },
                   ...this.playlistStore.playlists,
-                ].map(p => {
-                  return (
-                    <CollectionListItem
-                      key={p.id}
-                      selected={
-                        p.id ===
-                        this.playlistStore.searchState.selectedPlaylistId
-                      }
-                      onClick={() =>
-                        (this.playlistStore.searchState.selectedPlaylistId =
-                          p.id)
-                      }
-                      name={p.name}
-                    />
-                  );
-                })}
+                ].map(p => (
+                  <CollectionListItem
+                    key={p.id}
+                    selected={
+                      p.id === this.playlistStore.searchState.selectedPlaylistId
+                    }
+                    onClick={() => {
+                      this.playlistStore.searchState.selectedPlaylistId = p.id;
+                    }}
+                    name={p.name}
+                  />
+                ))}
               </div>
               <ResizeHandle
                 onResize={delta => {
@@ -75,7 +72,7 @@ export default observer(
                   right: -5,
                   width: 5,
                   top: 0,
-                  height: "100vh",
+                  height: "100%",
                   background: "gray",
                 }}
               />
@@ -84,9 +81,10 @@ export default observer(
               style={{
                 overflow: "auto",
                 paddingLeft: this.uiStore.state.panelGutter,
+                flexGrow: 1,
               }}
             >
-              <Table
+              <MainPane
                 uiStore={this.uiStore}
                 playlistStore={this.playlistStore}
               />
