@@ -83,19 +83,12 @@ class MainPane extends React.Component {
           </div>
           <div>Tags</div>
         </div>
-        {playlistStore.searchState.numFetches ? (
-          <div>
-            Loading...
-            {playlistStore.searchState.numFetches}
-          </div>
-        ) : (
-          <Table
-            uiStore={uiStore}
-            playlistStore={playlistStore}
-            tagSelectOptions={this.tagSelectOptions}
-            tagSelectOptionsMap={this.tagSelectOptionsMap}
-          />
-        )}
+        <Table
+          uiStore={uiStore}
+          playlistStore={playlistStore}
+          tagSelectOptions={this.tagSelectOptions}
+          tagSelectOptionsMap={this.tagSelectOptionsMap}
+        />
       </React.Fragment>
     );
   }

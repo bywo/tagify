@@ -25,7 +25,8 @@ export default class MyApp extends App {
             rel="stylesheet"
           />
         </Head>
-        <style global jsx>{`
+        <style global jsx>
+{`
           body {
             font-family: "Source Sans Pro", sans-serif;
           }
@@ -33,7 +34,9 @@ export default class MyApp extends App {
           * {
             box-sizing: border-box;
           }
-        `}</style>
+        `}
+
+        </style>
         <Component {...pageProps} />
       </Container>
     );

@@ -1,6 +1,5 @@
+import React from "react";
 import { observer } from "mobx-react";
-import { reaction } from "mobx";
-import { List, CellMeasurerCache } from "react-virtualized";
 import TableRow from "./TableRow";
 
 class BasicTable extends React.Component {
@@ -11,16 +10,20 @@ class BasicTable extends React.Component {
 
     return (
       <React.Fragment>
-        {filteredList.map(t => {
-          const identifier = t.track.uri;
+        {filteredList.map(identifier => {
+          const t = this.props.playlistStore.tracksById[identifier];
           const tags = tagsByTrack[identifier].map(
             playlistId => this.props.tagSelectOptionsMap[playlistId],
           );
 
+          if (!t) {
+            return null;
+          }
+
           return (
             <TableRow
-              key={t.track.uri}
-              track={t.track}
+              key={identifier}
+              track={t}
               tags={tags}
               tagOptions={this.props.tagSelectOptions}
               trackColWidth={this.props.uiStore.state.trackColWidth}

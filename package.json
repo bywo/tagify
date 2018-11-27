@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@zeit/next-css": "^1.0.1",
+    "dexie": "^2.0.4",
     "gh-pages": "^2.0.1",
     "husky": "^1.1.4",
     "lodash": "^4.17.11",
@@ -28,7 +29,10 @@
     "react": "^16.6.1",
     "react-dom": "^16.6.1",
     "react-select": "^2.1.1",
-    "react-virtualized": "^9.21.0"
+    "react-virtualized": "^9.21.0",
+    "recompose": "^0.30.0",
+    "rxjs": "^6.3.3",
+    "xstream": "^11.7.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.0.1",
