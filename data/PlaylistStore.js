@@ -1,15 +1,17 @@
 import { observable, autorun, computed, decorate } from "mobx";
-import * as rxjs from "rxjs";
+import xs from "xstream";
+import debounce from "xstream/extra/debounce";
+import sampleCombine from "xstream/extra/sampleCombine";
 import _ from "lodash";
-import {
-  map,
-  switchMap,
-  debounce,
-  debounceTime,
-  withLatestFrom,
-  startWith,
-  filter,
-} from "rxjs/operators";
+// import {
+//   map,
+//   switchMap,
+//   debounce,
+//   debounceTime,
+//   withLatestFrom,
+//   startWith,
+//   filter,
+// } from "rxjs/operators";
 import db from "./db";
 import { fetch$ } from "./UserStore";
 
@@ -44,42 +46,52 @@ async function savePlaylistsToDb(playlists) {
     .delete();
 }
 
+const validFetch$ = fetch$.filter(f => !!f);
+const invalidFetch$ = fetch$.filter(f => !f);
+const intervalAfterValidFetch = validFetch$
+  .map(() => {
+    console.log("interval before flatten");
+    return xs.periodic(resyncPlaylistsInterval).startWith(0);
+  })
+  .flatten()
+  .endWhen(invalidFetch$);
 // whenever we have a valid fetch token, refresh playlists
-const playlistFetches$ = new rxjs.Subject();
-rxjs
-  .combineLatest(
-    fetch$.pipe(filter(f => !!f)),
-    rxjs.interval(resyncPlaylistsInterval).pipe(startWith(0)),
-  )
-  .pipe(switchMap(([fetch]) => fetchPlaylists(fetch)))
-  .subscribe(playlistFetches$);
+const playlistFetches$ = xs
+  .combine(validFetch$, intervalAfterValidFetch)
+  .map(([fetch]) => {
+    console.log("fetching playlists");
+    return fetchPlaylists(fetch);
+  })
+  .map(xs.fromPromise)
+  .flatten();
 
-playlistFetches$.subscribe(async ps => {
-  if (ps) {
-    // HACK. try switching to xstream
-    console.log("fetched playlists", ps);
-    savePlaylistsToDb(ps);
-  }
-});
-// fetch$.subscribe(fetch => {
-//   console.log("heyo fetch$", fetch);
-//   syncPlaylists(fetch);
-// });
-
-const playlistChanges$ = new rxjs.BehaviorSubject();
-db.playlists.hook("creating", (key, p) => {
-  playlistChanges$.next();
+playlistFetches$.addListener({
+  next(ps) {
+    if (ps) {
+      // HACK. try switching to xstream
+      console.log("fetched playlists", ps);
+      savePlaylistsToDb(ps);
+    }
+  },
 });
 
-db.playlists.hook("updating", (modifications, key, p) => {
-  if (_.size(modifications) > 0) {
-    playlistChanges$.next();
-  }
+const playlistChanges$ = xs.create({
+  start(listener) {
+    db.playlists.hook("creating", () => listener.next());
+
+    db.playlists.hook("updating", modifications => {
+      if (_.size(modifications) > 0) {
+        listener.next();
+      }
+    });
+
+    db.playlists.hook("deleting", () => listener.next());
+  },
+  stop() {},
 });
 
 db.playlists.hook("deleting", async key => {
   console.log("playlist deleting");
-  playlistChanges$.next();
   _.defer(() =>
     db.playlistTracks
       .where("id")
@@ -88,79 +100,57 @@ db.playlists.hook("deleting", async key => {
   );
 });
 
-const playlists$ = new rxjs.Subject();
-playlistChanges$
-  .pipe(
-    debounceTime(30),
-    switchMap(() => {
-      if (process.browser) {
-        console.log("get from db");
-        return db.playlists.toCollection().sortBy("index");
-      }
-      return Promise.resolve([]);
-    }),
-  )
-  .subscribe(playlists$);
-playlists$.subscribe(playlists => {
-  console.log("playlists", playlists);
-});
-playlists$.subscribe(playlists => {
-  console.log("playlists2", playlists);
-});
-
-const playlistTrackChanges$ = new rxjs.BehaviorSubject();
-db.playlistTracks.hook("creating", (key, p) => {
-  playlistTrackChanges$.next();
-});
-
-db.playlistTracks.hook("updating", (modifications, key, p) => {
-  if (_.size(modifications) > 0) {
-    playlistTrackChanges$.next();
-  }
-});
-
-db.playlistTracks.hook("deleting", key => {
-  playlistTrackChanges$.next();
-});
-
-const playlistTracks$ = new rxjs.Subject();
-playlistTrackChanges$
-  .pipe(
-    debounceTime(30),
-    switchMap(() => {
-      if (process.browser) {
-        console.log("get from db");
-        return db.playlistTracks.toArray();
-      }
-      return Promise.resolve([]);
-    }),
-  )
-  .subscribe(playlistTracks$);
-playlistTracks$.subscribe(pt => {
-  console.log("playlisttracks", pt);
-});
-
-playlistFetches$
-  .pipe(withLatestFrom(playlistTracks$, fetch$))
-  .subscribe(([playlists, playlistTracks, fetch]) => {
-    console.log("checking", playlists, playlistTracks);
-    for (const p of playlists) {
-      if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
-        console.log("couldn't find", p.id, p.snapshot_id);
-        fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href);
-      }
+export const playlists$ = playlistChanges$
+  .startWith(undefined)
+  .compose(debounce(30))
+  .map(() => {
+    if (process.browser) {
+      console.log("get from db");
+      return db.playlists.toCollection().sortBy("index");
     }
-  });
+    return Promise.resolve([]);
+  })
+  .map(xs.fromPromise)
+  .flatten();
 
-playlistTracks$.pipe(
-  map(playlistTracks => {
-    const ret = {};
-    playlistTracks.forEach(({ id, trackIds }) => {
-      ret[id] = trackIds;
+playlists$.addListener({
+  next(playlists) {
+    console.log("playlists", playlists);
+  },
+});
+
+const playlistTrackChanges$ = xs.create({
+  start(listener) {
+    db.playlistTracks.hook("creating", () => listener.next());
+
+    db.playlistTracks.hook("updating", modifications => {
+      if (_.size(modifications) > 0) {
+        listener.next();
+      }
     });
-    return ret;
-  }),
-);
+
+    db.playlistTracks.hook("deleting", () => listener.next());
+  },
+  stop() {},
+});
+
+const playlistTracks$ = playlistTrackChanges$
+  .compose(debounce(30))
+  .map(() => {
+    if (process.browser) {
+      console.log("get from db");
+      return db.playlistTracks.toArray();
+    }
+    return Promise.resolve([]);
+  })
+  .map(xs.fromPromise)
+  .flatten();
+playlistTracks$.addListener({
+  next(pt) {
+    console.log("playlisttracks", pt);
+  },
+});
+
 async function fetchPlaylistTracks(fetch, playlistId, url) {
   const resp = await fetch(url);
   const { next, items } = await resp.json();
@@ -182,61 +172,57 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
   });
 }
 
-const tagsByTrack = new rxjs.BehaviorSubject({});
-playlistTracks$
-  .pipe(
-    map(playlistTracks => {
-      const ret = {};
+playlistFetches$
+  .compose(sampleCombine(playlistTracks$, fetch$))
+  .addListener(([playlists, playlistTracks, fetch]) => {
+    for (const p of playlists) {
+      if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
+        console.log("couldn't find", p.id, p.snapshot_id);
+        fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href);
+      }
+    }
+  });
 
-      _.forEach(playlistTracks, ({ id: playlistId, trackIds }) => {
-        trackIds.forEach(uri => {
-          if (!ret[uri]) {
-            ret[uri] = [];
-          }
-
-          if (!ret[uri].includes(playlistId)) {
-            ret[uri].push(playlistId);
-          }
-        });
-      });
-
-      return ret;
-    }),
-  )
-  .subscribe(tagsByTrack);
-
-tagsByTrack.subscribe(t => {
-  console.log("tagsByTrack", t);
-});
-
-const trackChanges$ = new rxjs.BehaviorSubject();
-db.tracks.hook("creating", (key, p) => {
-  trackChanges$.next();
-});
-
-db.tracks.hook("updating", (modifications, key, p) => {
-  if (_.size(modifications) > 0) {
-    trackChanges$.next();
+const tagsByTrackId$ = playlistTracks$.map(playlistTracks => {
+  const ret = {};
+  for (const { id, trackIds } of playlistTracks) {
+    for (const trackId of trackIds) {
+      if (!ret[trackId]) {
+        ret[trackId] = [];
+      }
+      if (!ret[trackId].includes(id)) {
+        ret[trackId].push(id);
+      }
+    }
   }
 });
 
-db.tracks.hook("deleting", key => {
-  trackChanges$.next();
+const trackChanges$ = xs.create({
+  start(listener) {
+    db.tracks.hook("creating", () => listener.next());
+
+    db.tracks.hook("updating", modifications => {
+      if (_.size(modifications) > 0) {
+        listener.next();
+      }
+    });
+
+    db.tracks.hook("deleting", () => listener.next());
+  },
+  stop() {},
 });
 
-const tracksById$ = new rxjs.Subject();
-trackChanges$
-  .pipe(
-    debounceTime(30),
-    switchMap(async () => {
-      if (process.browser) {
-        const tracks = await db.tracks.toArray();
-        return _.keyBy(tracks, "uri");
-      }
-      return Promise.resolve({});
-    }),
-  )
-  .subscribe(tracksById$);
+const tracksById$ = trackChanges$
+  .compose(debounce(30))
+  .map(async () => {
+    if (process.browser) {
+      const tracks = await db.tracks.toArray();
+      return _.keyBy(tracks, "uri");
+    }
+    return Promise.resolve({});
+  })
+  .map(xs.fromPromise)
+  .flatten();
 
 export default class PlaylistStore {
   constructor() {

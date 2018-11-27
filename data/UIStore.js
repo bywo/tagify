@@ -1,30 +1,9 @@
-import fetch from "../util/fetch";
-import { observable, autorun, computed, decorate } from "mobx";
 import _ from "lodash";
 
-export default class UIStore {
-  constructor() {
-    window.addEventListener("resize", () => {
-      this.state.windowWidth = window.innerWidth;
-      this.state.windowHeight = window.innerHeight;
-    });
-  }
-  state = observable({
-    panelGutter: 20,
-    windowWidth: window.innerWidth,
-    windowHeight: window.innerHeight,
-    sidebarWidth: 200,
-    trackColWidth: 180,
-    artistColWidth: 180,
-  });
+import xs from "xstream";
 
-  get mainPanelWidth() {
-    return (
-      this.state.windowWidth - this.state.sidebarWidth - this.state.panelGutter
-    );
-  }
-}
+export const sidebarDeltas$ = xs.create();
+export const sidebarWidth$ = sidebarDeltas$.fold((acc, x) => acc + x, 200);
 
-decorate(UIStore, {
-  mainPanelWidth: computed,
-});
+export const trackColWidth$ = xs.of(200);
+export const artistColWidth$ = xs.of(200);

@@ -5,8 +5,11 @@ import { map } from "rxjs/operators";
 import Login from "../components/Login";
 import App from "../components/App";
 import { token$ } from "../data/UserStore";
-import componentFromStream from "../util/componentFromStream";
+import { componentFromStream } from "../util/recompose";
 
 export default componentFromStream(() =>
-  token$.pipe(map(token => (token ? <App /> : <Login />))),
+  token$.map(token => {
+    console.log("got token", token);
+    return token ? <App /> : <Login />;
+  }),
 );

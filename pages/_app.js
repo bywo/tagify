@@ -4,7 +4,7 @@ import Head from "next/head";
 import "normalize.css";
 
 export default class MyApp extends App {
-  static async getInitialProps({ Component, router, ctx }) {
+  static async getInitialProps({ Component, ctx }) {
     let pageProps = {};
 
     if (Component.getInitialProps) {
@@ -26,16 +26,15 @@ export default class MyApp extends App {
           />
         </Head>
         <style global jsx>
-{`
-          body {
-            font-family: "Source Sans Pro", sans-serif;
-          }
+          {`
+            body {
+              font-family: "Source Sans Pro", sans-serif;
+            }
 
-          * {
-            box-sizing: border-box;
-          }
-        `}
-
+            * {
+              box-sizing: border-box;
+            }
+          `}
         </style>
         <Component {...pageProps} />
       </Container>
