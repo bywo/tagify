@@ -5,7 +5,13 @@ import { components } from "react-select";
 const { MultiValue, SelectContainer } = components;
 
 export default class TableRow extends React.Component {
-  shouldComponentUpdate(nextProps) {
+  state = { hover: false, menuOpen: false };
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if (nextState.hover !== this.state.hover) {
+      return true;
+    }
+
     const { track, tags, trackColWidth, artistColWidth } = this.props;
     if (track.uri !== nextProps.track.uri) {
       return true;
@@ -26,6 +32,14 @@ export default class TableRow extends React.Component {
     return false;
   }
 
+  onMouseEnter = () => {
+    this.setState({ hover: true });
+  };
+
+  onMouseLeave = () => {
+    this.setState({ hover: false });
+  };
+
   render() {
     return (
       <div
@@ -34,6 +48,8 @@ export default class TableRow extends React.Component {
           borderBottom: "solid 1px gray",
           alignItems: "baseline",
         }}
+        onMouseEnter={this.onMouseEnter}
+        onMouseLeave={this.onMouseLeave}
       >
         <div
           style={{
@@ -64,45 +80,88 @@ export default class TableRow extends React.Component {
             padding: "4px",
           }}
         >
-          <CreatableSelect
-            isMulti
-            isSearchable
-            options={this.props.tagOptions}
-            value={this.props.tags}
-            onChange={selectedOptions => {
-              this.props.cellMeasurerCache.clear(this.props.index);
-              const added = _.difference(selectedOptions, this.props.tags);
-              const deleted = _.difference(this.props.tags, selectedOptions);
-              added
-                .filter(option => option.__isNew__)
-                .forEach(({ label }) => {
-                  this.props.createTagWithTrack(this.props.track.uri, label);
+          {this.state.hover || this.state.menuOpen ? (
+            <CreatableSelect
+              isMulti
+              isSearchable
+              options={this.props.tagOptions}
+              value={this.props.tags}
+              onMenuOpen={() => {
+                this.setState({ menuOpen: true });
+              }}
+              onMenuClose={() => {
+                this.setState({ menuOpen: false });
+              }}
+              onChange={selectedOptions => {
+                this.props.cellMeasurerCache.clear(this.props.index);
+                const added = _.difference(selectedOptions, this.props.tags);
+                const deleted = _.difference(this.props.tags, selectedOptions);
+                added
+                  .filter(option => option.__isNew__)
+                  .forEach(({ label }) => {
+                    this.props.createTagWithTrack(this.props.track.uri, label);
+                  });
+                added
+                  .filter(option => !option.__isNew__)
+                  .forEach(({ value: playlistId }) => {
+                    this.props.addTag(this.props.track.uri, playlistId);
+                  });
+                deleted.forEach(({ value: playlistId }) => {
+                  this.props.removeTag(this.props.track.uri, playlistId);
                 });
-              added
-                .filter(option => !option.__isNew__)
-                .forEach(({ value: playlistId }) => {
-                  this.props.addTag(this.props.track.uri, playlistId);
-                });
-              deleted.forEach(({ value: playlistId }) => {
-                this.props.removeTag(this.props.track.uri, playlistId);
-              });
-            }}
-            styles={{
-              multiValue: (styles, { data }) => ({
-                ...styles,
-                backgroundColor: data.color,
-              }),
-              multiValueLabel: styles => ({
-                ...styles,
-                color: "white",
-              }),
-              multiValueRemove: styles => ({
-                ...styles,
-                color: "white",
-              }),
-            }}
-          />
-          <SelectContainer />
+              }}
+              styles={{
+                multiValue: (styles, { data }) => ({
+                  ...styles,
+                  backgroundColor: data.color,
+                }),
+                multiValueLabel: styles => ({
+                  ...styles,
+                  color: "white",
+                }),
+                multiValueRemove: styles => ({
+                  ...styles,
+                  color: "white",
+                }),
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                padding: "2px 81px 2px 8px",
+                border: "solid 1px hsl(0,0%,80%)",
+                borderRadius: "4px",
+                minHeight: 38,
+              }}
+            >
+              {this.props.tags.map(tag => (
+                <div
+                  key={tag.value}
+                  style={{
+                    borderRadius: "2px",
+                    color: "white",
+                    fontSize: "85%",
+                    overflow: "hidden",
+                    padding: "3px 25px 3px 3px",
+                    paddingLeft: "6px",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    boxSizing: "border-box",
+                    background: tag.color,
+                    margin: "2px",
+                  }}
+                >
+                  {tag.label}
+                </div>
+              ))}
+              <div style={{ padding: "2px 0", margin: "2px", width: 2 }}>
+                {`\u2060`}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
