@@ -1,5 +1,8 @@
 import React from "react";
 import CreatableSelect from "react-select/lib/Creatable";
+import { components } from "react-select";
+
+const { MultiValue, SelectContainer } = components;
 
 export default class TableRow extends React.Component {
   shouldComponentUpdate(nextProps) {
@@ -61,7 +64,7 @@ export default class TableRow extends React.Component {
             padding: "4px",
           }}
         >
-          {/* <CreatableSelect
+          <CreatableSelect
             isMulti
             isSearchable
             options={this.props.tagOptions}
@@ -98,7 +101,8 @@ export default class TableRow extends React.Component {
                 color: "white",
               }),
             }}
-          /> */}
+          />
+          <SelectContainer />
         </div>
       </div>
     );
