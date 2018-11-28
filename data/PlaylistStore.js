@@ -3,17 +3,9 @@ import xs from "xstream";
 import debounce from "xstream/extra/debounce";
 import sampleCombine from "xstream/extra/sampleCombine";
 import _ from "lodash";
-// import {
-//   map,
-//   switchMap,
-//   debounce,
-//   debounceTime,
-//   withLatestFrom,
-//   startWith,
-//   filter,
-// } from "rxjs/operators";
 import db from "./db";
 import { fetch$ } from "./UserStore";
+import { selectedPlaylist$ } from "./UIStore";
 
 const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
 
@@ -111,7 +103,8 @@ export const playlists$ = playlistChanges$
     return Promise.resolve([]);
   })
   .map(xs.fromPromise)
-  .flatten();
+  .flatten()
+  .remember();
 
 playlists$.addListener({
   next(playlists) {
@@ -135,6 +128,7 @@ const playlistTrackChanges$ = xs.create({
 });
 
 const playlistTracks$ = playlistTrackChanges$
+  .startWith(undefined)
   .compose(debounce(30))
   .map(() => {
     if (process.browser) {
@@ -144,10 +138,20 @@ const playlistTracks$ = playlistTrackChanges$
     return Promise.resolve([]);
   })
   .map(xs.fromPromise)
-  .flatten();
+  .flatten()
+  .remember();
 playlistTracks$.addListener({
   next(pt) {
     console.log("playlisttracks", pt);
+  },
+});
+
+const allTracks$ = playlistTracks$
+  .map(playlistTracks => _.uniq(_.flatten(_.map(playlistTracks, "trackIds"))))
+  .remember();
+allTracks$.addListener({
+  next(pt) {
+    console.log("allTracks", pt);
   },
 });
 
@@ -172,29 +176,38 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
   });
 }
 
-playlistFetches$
-  .compose(sampleCombine(playlistTracks$, fetch$))
-  .addListener(([playlists, playlistTracks, fetch]) => {
+playlistFetches$.compose(sampleCombine(playlistTracks$, fetch$)).addListener({
+  next([playlists, playlistTracks, fetch]) {
+    console.log("after playlist fetch");
     for (const p of playlists) {
       if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
         console.log("couldn't find", p.id, p.snapshot_id);
         fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href);
       }
     }
-  });
+  },
+});
 
-const tagsByTrackId$ = playlistTracks$.map(playlistTracks => {
-  const ret = {};
-  for (const { id, trackIds } of playlistTracks) {
-    for (const trackId of trackIds) {
-      if (!ret[trackId]) {
-        ret[trackId] = [];
-      }
-      if (!ret[trackId].includes(id)) {
-        ret[trackId].push(id);
+export const tagsByTrack$ = playlistTracks$
+  .map(playlistTracks => {
+    const ret = {};
+    for (const { id, trackIds } of playlistTracks) {
+      for (const trackId of trackIds) {
+        if (!ret[trackId]) {
+          ret[trackId] = [];
+        }
+        if (!ret[trackId].includes(id)) {
+          ret[trackId].push(id);
+        }
       }
     }
-  }
+    return ret;
+  })
+  .remember();
+tagsByTrack$.addListener({
+  next(t) {
+    console.log("tagsByTrack", t);
+  },
 });
 
 const trackChanges$ = xs.create({
@@ -212,7 +225,8 @@ const trackChanges$ = xs.create({
   stop() {},
 });
 
-const tracksById$ = trackChanges$
+export const tracksById$ = trackChanges$
+  .startWith(undefined)
   .compose(debounce(30))
   .map(async () => {
     if (process.browser) {
@@ -222,7 +236,31 @@ const tracksById$ = trackChanges$
     return Promise.resolve({});
   })
   .map(xs.fromPromise)
-  .flatten();
+  .flatten()
+  .remember();
+tracksById$.addListener({
+  next(t) {
+    console.log("tracksById", t);
+  },
+});
+
+export const filteredTracks$ = xs
+  .combine(selectedPlaylist$, playlistTracks$, allTracks$)
+  .map(([selectedPlaylist, playlistTracks, allTracks]) => {
+    if (selectedPlaylist === "all") {
+      return allTracks;
+    }
+    return playlistTracks.find(pt => pt.id === selectedPlaylist).trackIds;
+  })
+  .remember();
+filteredTracks$.addListener({
+  next(t) {
+    console.log("filteredTracks", t);
+  },
+  error(e) {
+    console.error(e.stack);
+  },
+});
 
 export default class PlaylistStore {
   constructor() {

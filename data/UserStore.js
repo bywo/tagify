@@ -42,7 +42,7 @@ export const fetch$ = token$
       }
       if (resp.status === 401) {
         // bad token
-        setToken(null);
+        tokenSets$.shamefullySendNext(null);
       }
       return resp;
     }
@@ -63,4 +63,7 @@ export const user$ = fetch$
     const resp = await fetch("https://api.spotify.com/v1/me");
     const data = await resp.json();
     return data;
-  });
+  })
+  .map(xs.fromPromise)
+  .flatten()
+  .remember();

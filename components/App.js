@@ -3,22 +3,32 @@ import xs from "xstream";
 import CollectionListItem from "./CollectionListItem";
 import ResizeHandle from "./ResizeHandle";
 import MainPane from "./MainPane";
+import Header from "./Header";
 
 import { componentFromStream, createEventHandler } from "../util/recompose";
 import * as playlist from "../data/PlaylistStore";
 import * as ui from "../data/UIStore";
 
+if (global.window) {
+  window.playlist = playlist;
+}
+
 export default componentFromStream(() => {
-  console.log("App componentFromStream");
   const {
     handler: onSidebarResize,
-    stream: sidebarStream,
+    stream: sidebarDeltasInput$,
   } = createEventHandler();
-  ui.sidebarDeltas$.imitate(sidebarStream);
+  ui.sidebarDeltas$.imitate(sidebarDeltasInput$);
+
+  const {
+    handler: onSelectPlaylist,
+    stream: selectedPlaylistInput$,
+  } = createEventHandler();
+  ui.selectedPlaylistChanges$.imitate(selectedPlaylistInput$);
 
   return xs
-    .combine(ui.sidebarWidth$, playlist.playlists$)
-    .map(([sidebarWidth, playlists]) => (
+    .combine(ui.sidebarWidth$, playlist.playlists$, ui.selectedPlaylist$)
+    .map(([sidebarWidth, playlists, selectedPlaylist]) => (
       <div
         style={{
           height: "100vh",
@@ -26,7 +36,7 @@ export default componentFromStream(() => {
           flexDirection: "column",
         }}
       >
-        <div>header</div>
+        <Header />
         <div
           style={{
             display: "flex",
@@ -52,11 +62,9 @@ export default componentFromStream(() => {
               {[{ id: "all", name: "All songs" }, ...playlists].map(p => (
                 <CollectionListItem
                   key={p.id}
-                  // selected={
-                  //   p.id === this.playlistStore.searchState.selectedPlaylistId
-                  // }
+                  selected={p.id === selectedPlaylist}
                   onClick={() => {
-                    this.playlistStore.searchState.selectedPlaylistId = p.id;
+                    onSelectPlaylist(p.id);
                   }}
                   name={p.name}
                 />
@@ -81,7 +89,7 @@ export default componentFromStream(() => {
               flexGrow: 1,
             }}
           >
-            {/* <MainPane /> */}
+            <MainPane />
           </div>
         </div>
       </div>

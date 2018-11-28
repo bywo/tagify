@@ -1,19 +1,22 @@
 import React from "react";
-import { observer } from "mobx-react";
 import TableRow from "./TableRow";
 
-class BasicTable extends React.Component {
+export default class BasicTable extends React.Component {
   render() {
-    const filteredList = this.props.playlistStore.filteredTracks;
-
-    const tagsByTrack = this.props.playlistStore.tagsByTrack;
+    const {
+      filteredTracks,
+      tagsByTrack,
+      tracksById,
+      tagSelectOptions,
+      tagSelectOptionsMap,
+    } = this.props;
 
     return (
       <React.Fragment>
-        {filteredList.map(identifier => {
-          const t = this.props.playlistStore.tracksById[identifier];
+        {filteredTracks.map(identifier => {
+          const t = tracksById[identifier];
           const tags = tagsByTrack[identifier].map(
-            playlistId => this.props.tagSelectOptionsMap[playlistId],
+            playlistId => tagSelectOptionsMap[playlistId],
           );
 
           if (!t) {
@@ -25,12 +28,12 @@ class BasicTable extends React.Component {
               key={identifier}
               track={t}
               tags={tags}
-              tagOptions={this.props.tagSelectOptions}
-              trackColWidth={this.props.uiStore.state.trackColWidth}
-              artistColWidth={this.props.uiStore.state.artistColWidth}
-              addTag={this.props.playlistStore.addTag}
-              removeTag={this.props.playlistStore.removeTag}
-              createTagWithTrack={this.props.playlistStore.createTagWithTrack}
+              tagOptions={tagSelectOptions}
+              trackColWidth={200}
+              artistColWidth={200}
+              addTag={undefined}
+              removeTag={undefined}
+              createTagWithTrack={undefined}
             />
           );
         })}
@@ -38,5 +41,3 @@ class BasicTable extends React.Component {
     );
   }
 }
-
-export default observer(BasicTable);

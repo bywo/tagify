@@ -6,6 +6,7 @@ import as from "../util/as";
 
 import { componentFromStream, createEventHandler } from "../util/recompose";
 import { tokenSets$ } from "../data/UserStore";
+import "../data/PlaylistStore";
 
 class SpotifyAuth extends React.Component {
   componentDidMount() {
