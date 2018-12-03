@@ -43,6 +43,7 @@ export default class TableRow extends React.Component {
   };
 
   render() {
+    const { track } = this.props;
     return (
       <div
         ref={el => (this.root = el)}
@@ -64,7 +65,7 @@ export default class TableRow extends React.Component {
             padding: theme.spacing.m,
           }}
         >
-          {this.props.track.name}
+          {track.name}
         </div>
         <div
           style={{
@@ -73,12 +74,13 @@ export default class TableRow extends React.Component {
             padding: theme.spacing.m,
           }}
         >
-          {this.props.track.artists.map((a, index) => (
-            <span key={a.id}>
-              {a.name}
-              {index !== this.props.track.artists.length - 1 ? ", " : null}
-            </span>
-          ))}
+          {track.artists &&
+            track.artists.map((a, index) => (
+              <span key={a.id}>
+                {a.name}
+                {index !== track.artists.length - 1 ? ", " : null}
+              </span>
+            ))}
         </div>
         <div
           style={{
@@ -108,15 +110,15 @@ export default class TableRow extends React.Component {
                   .filter(option => option.__isNew__)
                   .forEach(({ label }) => {
                     console.log("creating createAndAddTag");
-                    this.props.createAndAddTag(this.props.track.uri, label);
+                    this.props.createAndAddTag(track.uri, label);
                   });
                 added
                   .filter(option => !option.__isNew__)
                   .forEach(({ value: playlistId }) => {
-                    this.props.addTag(this.props.track.uri, playlistId);
+                    this.props.addTag(track.uri, playlistId);
                   });
                 deleted.forEach(({ value: playlistId }) => {
-                  this.props.removeTag(this.props.track.uri, playlistId);
+                  this.props.removeTag(track.uri, playlistId);
                 });
               }}
               styles={{

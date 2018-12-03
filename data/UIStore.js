@@ -4,24 +4,24 @@ import xs from "xstream";
 import { createEventHandler } from "../util/recompose";
 
 const {
-  handler: onSidebarResize,
+  handler: onResizeSidebar,
   stream: sidebarDeltas$,
 } = createEventHandler();
-export { onSidebarResize };
+export { onResizeSidebar };
 export const sidebarWidth$ = sidebarDeltas$.fold((acc, x) => acc + x, 200);
 
 const {
-  handler: onTrackColResize,
+  handler: onResizeTrackCol,
   stream: trackColDeltas$,
 } = createEventHandler();
-export { onTrackColResize };
+export { onResizeTrackCol };
 export const trackColWidth$ = trackColDeltas$.fold((acc, x) => acc + x, 200);
 
 const {
-  handler: onArtistColResize,
+  handler: onResizeArtistCol,
   stream: artistColDeltas$,
 } = createEventHandler();
-export { onArtistColResize };
+export { onResizeArtistCol };
 export const artistColWidth$ = artistColDeltas$.fold((acc, x) => acc + x, 200);
 
 const {

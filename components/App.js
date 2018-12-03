@@ -49,7 +49,7 @@ export default componentFromStream(() =>
               onSelectPlaylist={ui.onSelectPlaylist}
             />
             <ResizeHandle
-              onResize={ui.onSidebarResize}
+              onResize={ui.onResizeSidebar}
               style={{
                 position: "absolute",
                 right: -5,
