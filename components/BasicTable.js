@@ -1,5 +1,6 @@
 import React from "react";
 import TableRow from "./TableRow";
+import theme from "../theme";
 
 export default class BasicTable extends React.Component {
   render() {
@@ -9,15 +10,19 @@ export default class BasicTable extends React.Component {
       tracksById,
       tagSelectOptions,
       tagSelectOptionsMap,
+      addTag,
+      removeTag,
+      createAndAddTag,
     } = this.props;
 
     return (
-      <React.Fragment>
+      <div style={{ padding: theme.spacing.l, overflow: "auto" }}>
         {filteredTracks.map(identifier => {
           const t = tracksById[identifier];
-          const tags = tagsByTrack[identifier].map(
-            playlistId => tagSelectOptionsMap[playlistId],
-          );
+          const tagsForTrack = tagsByTrack[identifier];
+          const tags = tagsForTrack
+            ? tagsForTrack.map(playlistId => tagSelectOptionsMap[playlistId])
+            : [];
 
           if (!t) {
             return null;
@@ -31,13 +36,13 @@ export default class BasicTable extends React.Component {
               tagOptions={tagSelectOptions}
               trackColWidth={200}
               artistColWidth={200}
-              addTag={undefined}
-              removeTag={undefined}
-              createTagWithTrack={undefined}
+              addTag={addTag}
+              removeTag={removeTag}
+              createAndAddTag={createAndAddTag}
             />
           );
         })}
-      </React.Fragment>
+      </div>
     );
   }
 }

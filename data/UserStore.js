@@ -1,6 +1,7 @@
 import xs from "xstream";
 import dropRepeats from "xstream/extra/dropRepeats";
 import db from "./db";
+import { createEventHandler } from "../util/recompose";
 
 const tokenFromDb$ = xs.fromPromise(db.misc.get("token"));
 tokenFromDb$.addListener({
@@ -9,8 +10,8 @@ tokenFromDb$.addListener({
   },
 });
 
-// export let setToken;
-export const tokenSets$ = xs.createWithMemory();
+const { handler: onToken, stream: tokenSets$ } = createEventHandler();
+export { onToken };
 tokenSets$.addListener({
   next(token) {
     db.misc.put(token, "token");

@@ -4,16 +4,17 @@ import xs from "xstream";
 import randomMC from "random-material-color";
 import _ from "lodash";
 
-import { componentFromStream, createEventHandler } from "../util/recompose";
+import { componentFromStream } from "../util/recompose";
 import * as playlist from "../data/PlaylistStore";
 import * as ui from "../data/UIStore";
+import theme from "../theme";
 
 // import Table from "./VirtualizedTable";
 import Table from "./BasicTable";
 import SearchBar from "./SearchBar";
 import TableHeader from "./TableHeader";
 
-export default componentFromStream(() => {
+export default componentFromStream(props$ => {
   const tagSelectOptions$ = playlist.playlists$
     .map(playlists =>
       playlists.map(p => ({
@@ -34,6 +35,7 @@ export default componentFromStream(() => {
       playlist.tracksById$,
       tagSelectOptions$,
       tagSelectOptionsMap$,
+      props$,
     )
     .map(
       ([
@@ -42,18 +44,41 @@ export default componentFromStream(() => {
         tracksById,
         tagSelectOptions,
         tagSelectOptionsMap,
+        props,
       ]) => (
-        <React.Fragment>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            background: theme.colors.backgroundLight,
+            ...props.style,
+          }}
+        >
           <SearchBar />
-          <TableHeader />
+          {/* <TableHeader /> */}
           <Table
             filteredTracks={filteredTracks}
             tagsByTrack={tagsByTrack}
             tracksById={tracksById}
             tagSelectOptions={tagSelectOptions}
             tagSelectOptionsMap={tagSelectOptionsMap}
+            addTag={(trackId, playlistId) =>
+              playlist.addTag({ trackId, playlistId })
+            }
+            removeTag={(trackId, playlistId) =>
+              playlist.removeTag({ trackId, playlistId })
+            }
+            createAndAddTag={(trackId, playlistName) =>
+              playlist.createAndAddTag({ trackId, playlistName })
+            }
           />
-        </React.Fragment>
+        </div>
       ),
     );
 });
+
+/* <div
+          style={{
+            ...this.props.style,
+          }}
+        > */

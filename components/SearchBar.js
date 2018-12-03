@@ -1,24 +1,26 @@
 import React from "react";
-import PropTypes from "prop-types";
-import xs from "xstream";
 
-import { componentFromStream, createEventHandler } from "../util/recompose";
-import * as playlist from "../data/PlaylistStore";
+import { componentFromStream } from "../util/recompose";
 import * as ui from "../data/UIStore";
+import theme from "../theme";
 
-export default componentFromStream(() => {
-  const {
-    handler: onChangeSearchQuery,
-    stream: searchQueryChangesInput$,
-  } = createEventHandler();
-  ui.searchQueryChanges$.imitate(searchQueryChangesInput$);
-
-  return ui.searchQuery$.map(searchQuery => (
-    <input
-      value={searchQuery}
-      onChange={e => {
-        onChangeSearchQuery(e.target.value);
+export default componentFromStream(() =>
+  ui.searchQuery$.map(searchQuery => (
+    <div
+      style={{
+        background: theme.colors.backgroundLighter,
+        padding: `${theme.spacing.l}px ${theme.spacing.m}px`,
       }}
-    />
-  ));
-});
+    >
+      <span style={{ color: theme.colors.darkTextMedEmphasis }}>
+        Filter by title or artist:{" "}
+      </span>
+      <input
+        value={searchQuery}
+        onChange={e => {
+          ui.onChangeSearchQuery(e.target.value);
+        }}
+      />
+    </div>
+  )),
+);

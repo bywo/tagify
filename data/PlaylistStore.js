@@ -1,13 +1,115 @@
-import { observable, autorun, computed, decorate } from "mobx";
 import xs from "xstream";
 import debounce from "xstream/extra/debounce";
 import sampleCombine from "xstream/extra/sampleCombine";
+import flattenConcurrently from "xstream/extra/flattenConcurrently";
 import _ from "lodash";
 import db from "./db";
-import { fetch$ } from "./UserStore";
+import { user$, fetch$ } from "./UserStore";
+import * as ui from "./UIStore";
 import { selectedPlaylist$ } from "./UIStore";
+import { createEventHandler } from "../util/recompose";
+import * as api from "./api";
 
 const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
+
+const { handler: addTag, stream: addTagEvents$ } = createEventHandler();
+export { addTag };
+const addedTags$ = addTagEvents$
+  .compose(sampleCombine(fetch$))
+  .map(async ([{ trackId, playlistId }, fetch]) => {
+    const resp = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          uris: [trackId],
+        }),
+      },
+    );
+
+    if (resp.ok) {
+      return { trackId, playlistId };
+    }
+    throw new Error("failed to add");
+  })
+  .map(xs.fromPromise)
+  .compose(flattenConcurrently);
+addedTags$.addListener({
+  async next({ trackId, playlistId }) {
+    const pt = await db.playlistTracks.get(playlistId);
+    if (!pt.trackIds.includes(trackId)) {
+      pt.trackIds.push(trackId);
+      await db.playlistTracks.put(pt);
+    }
+  },
+});
+
+const { handler: removeTag, stream: removeTagEvents$ } = createEventHandler();
+export { removeTag };
+const removedTags$ = removeTagEvents$
+  .compose(sampleCombine(fetch$))
+  .map(async ([{ trackId, playlistId }, fetch]) => {
+    const resp = await fetch(
+      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({
+          tracks: [{ uri: trackId }],
+        }),
+      },
+    );
+
+    if (resp.ok) {
+      return { trackId, playlistId };
+    }
+    throw new Error("failed to remove");
+  })
+  .map(xs.fromPromise)
+  .compose(flattenConcurrently);
+removedTags$.addListener({
+  async next({ trackId, playlistId }) {
+    const pt = await db.playlistTracks.get(playlistId);
+    if (pt.trackIds.includes(trackId)) {
+      pt.trackIds = _.without(pt.trackIds, trackId);
+      await db.playlistTracks.put(pt);
+    }
+  },
+});
+
+const {
+  handler: createAndAddTag,
+  stream: createAndAddTagEvents$,
+} = createEventHandler();
+export { createAndAddTag };
+const createdTags$ = createAndAddTagEvents$
+  .compose(sampleCombine(fetch$, user$))
+  .map(async ([{ trackId, playlistName }, fetch, user]) => {
+    const playlist = await api.createPlaylist(fetch, user.id, playlistName);
+    return { trackId, playlist };
+  })
+  .map(xs.fromPromise)
+  .compose(flattenConcurrently)
+  .map(({ trackId, playlist }) =>
+    xs
+      .combine(
+        playlistTracks$
+          .filter(playlistTracks => _.find(playlistTracks, { id: playlist.id }))
+          .take(1),
+        xs.fromPromise(db.playlists.put(playlist)),
+      )
+      .mapTo({ trackId, playlist }),
+  )
+  .compose(flattenConcurrently);
+createdTags$.addListener({
+  async next({ trackId, playlist }) {
+    console.log("created playlist", playlist, "gonna call addTag");
+    addTag({ trackId, playlistId: playlist.id });
+  },
+
+  error(err) {
+    console.error("createAndAddTag", err.stack);
+  },
+});
 
 async function fetchPlaylists(
   fetch,
@@ -67,20 +169,22 @@ playlistFetches$.addListener({
   },
 });
 
-const playlistChanges$ = xs.create({
-  start(listener) {
-    db.playlists.hook("creating", () => listener.next());
+const playlistChanges$ = xs
+  .create({
+    start(listener) {
+      db.playlists.hook("creating", () => listener.next());
 
-    db.playlists.hook("updating", modifications => {
-      if (_.size(modifications) > 0) {
-        listener.next();
-      }
-    });
+      db.playlists.hook("updating", modifications => {
+        if (_.size(modifications) > 0) {
+          listener.next();
+        }
+      });
 
-    db.playlists.hook("deleting", () => listener.next());
-  },
-  stop() {},
-});
+      db.playlists.hook("deleting", () => listener.next());
+    },
+    stop() {},
+  })
+  .compose(debounce(0));
 
 db.playlists.hook("deleting", async key => {
   console.log("playlist deleting");
@@ -94,7 +198,6 @@ db.playlists.hook("deleting", async key => {
 
 export const playlists$ = playlistChanges$
   .startWith(undefined)
-  .compose(debounce(30))
   .map(() => {
     if (process.browser) {
       console.log("get from db");
@@ -176,9 +279,9 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
   });
 }
 
-playlistFetches$.compose(sampleCombine(playlistTracks$, fetch$)).addListener({
+playlists$.compose(sampleCombine(playlistTracks$, fetch$)).addListener({
   next([playlists, playlistTracks, fetch]) {
-    console.log("after playlist fetch");
+    console.log("scanning for playlists to fetch");
     for (const p of playlists) {
       if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
         console.log("couldn't find", p.id, p.snapshot_id);
@@ -245,13 +348,40 @@ tracksById$.addListener({
 });
 
 export const filteredTracks$ = xs
-  .combine(selectedPlaylist$, playlistTracks$, allTracks$)
-  .map(([selectedPlaylist, playlistTracks, allTracks]) => {
-    if (selectedPlaylist === "all") {
-      return allTracks;
-    }
-    return playlistTracks.find(pt => pt.id === selectedPlaylist).trackIds;
-  })
+  .combine(
+    selectedPlaylist$,
+    playlistTracks$,
+    allTracks$,
+    tracksById$,
+    ui.searchQuery$,
+  )
+  .map(
+    ([
+      selectedPlaylist,
+      playlistTracks,
+      allTracks,
+      tracksById,
+      searchQuery,
+    ]) => {
+      let tracks;
+      if (selectedPlaylist === "all") {
+        tracks = allTracks;
+      } else {
+        const playlistTrack = playlistTracks.find(
+          pt => pt.id === selectedPlaylist,
+        );
+        tracks = playlistTrack ? playlistTrack.trackIds : [];
+      }
+
+      if (!searchQuery) {
+        return tracks;
+      }
+      return tracks.filter(trackId => {
+        const track = tracksById[trackId];
+        return track && trackMatchesQuery(track, searchQuery);
+      });
+    },
+  )
   .remember();
 filteredTracks$.addListener({
   next(t) {
@@ -262,150 +392,11 @@ filteredTracks$.addListener({
   },
 });
 
-export default class PlaylistStore {
-  constructor() {
-    this.playlists = [];
-    this.tracksByPlaylist = {};
-    this.tracksById = {};
-    this.searchState = observable({
-      query: "",
-      selectedPlaylistId: "all",
-      numFetches: 0,
-    });
-    this.user = {};
-  }
-
-  get playlistsById() {
-    return _.keyBy(this.playlists, "id");
-  }
-
-  get playlistSelectValues() {
-    return this.playlists.map(p => ({ value: p.id, label: p.name }));
-  }
-
-  get playlistIds() {
-    return this.playlists.map(p => p.id);
-  }
-
-  get allTracks() {
-    return _.uniqBy(_.flatten(Object.values(this.tracksByPlaylist)), t => t);
-  }
-
-  get tagsByTrack() {
-    const ret = {};
-
-    _.forEach(this.tracksByPlaylist, (trackIds, playlistId) => {
-      trackIds.forEach(uri => {
-        if (!ret[uri]) {
-          ret[uri] = [];
-        }
-
-        if (!ret[uri].includes(playlistId)) {
-          ret[uri].push(playlistId);
-        }
-      });
-    });
-
-    return ret;
-  }
-
-  get filteredTracks() {
-    const tracksForSelectedList =
-      (this.searchState.selectedPlaylistId === "all"
-        ? this.allTracks
-        : this.tracksByPlaylist[this.searchState.selectedPlaylistId]) || [];
-
-    // TODO
-    const filteredList = tracksForSelectedList;
-    // const filteredList = this.searchState.query
-    //   ? tracksForSelectedList.filter(t => {
-    //       const query = this.searchState.query.toLowerCase();
-    //       return (
-    //         t.track.name.toLowerCase().includes(query) ||
-    //         _.some(t.track.artists, a => a.name.toLowerCase().includes(query))
-    //       );
-    //     })
-    //   : tracksForSelectedList;
-
-    return filteredList;
-  }
-
-  addTag = async (trackUri, playlistId) => {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          uris: [trackUri],
-        }),
-      },
-    );
-
-    if (resp.ok) {
-      const add = () => this.tracksByPlaylist[playlistId].push(trackUri);
-      if (this.tracksByPlaylist[playlistId]) {
-        add();
-      } else {
-        // we're probably fetching the playlist
-        const dispose = autorun(() => {
-          if (this.tracksByPlaylist[playlistId]) {
-            dispose();
-            add();
-          }
-        });
-      }
-    } else {
-    }
-  };
-
-  removeTag = async (trackUri, playlistId) => {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        method: "DELETE",
-        body: JSON.stringify({
-          tracks: [{ uri: trackUri }],
-        }),
-      },
-    );
-
-    if (resp.ok) {
-      this.tracksByPlaylist[playlistId] = this.tracksByPlaylist[
-        playlistId
-      ].filter(uri => uri !== trackUri);
-    } else {
-    }
-  };
-
-  createTagWithTrack = async (trackUri, playlistName) => {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/users/${this.user.id}/playlists`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          name: playlistName,
-          description: "Created by Tagify.",
-        }),
-      },
-    );
-    if (!resp.ok) {
-      throw new Error("Couldn't create tag");
-    }
-
-    const playlist = await resp.json();
-    this.playlists.push(playlist);
-
-    this.addTag(trackUri, playlist.id);
-  };
+function trackMatchesQuery(track, query) {
+  return (
+    track.name.toLowerCase().includes(query.toLowerCase()) ||
+    track.artists.some(artist =>
+      artist.name.toLowerCase().includes(query.toLowerCase()),
+    )
+  );
 }
-
-decorate(PlaylistStore, {
-  playlists: observable,
-  tracksByPlaylist: observable,
-  tracksById: observable,
-  playlistsById: computed,
-  playlistIds: computed,
-  allTracks: computed,
-  tagsByTrack: computed,
-  filteredTracks: computed,
-});

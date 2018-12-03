@@ -1,6 +1,8 @@
+import _ from "lodash";
 import React from "react";
 import CreatableSelect from "react-select/lib/Creatable";
 import { components } from "react-select";
+import theme from "../theme";
 
 const { MultiValue, SelectContainer } = components;
 
@@ -32,21 +34,25 @@ export default class TableRow extends React.Component {
     return false;
   }
 
-  onMouseEnter = () => {
+  onMouseEnter = e => {
     this.setState({ hover: true });
   };
 
-  onMouseLeave = () => {
+  onMouseLeave = e => {
     this.setState({ hover: false });
   };
 
   render() {
     return (
       <div
+        ref={el => (this.root = el)}
         style={{
           display: "flex",
-          borderBottom: "solid 1px gray",
+          borderBottom: `solid 1px ${theme.colors.background}`,
           alignItems: "baseline",
+          background: theme.colors.backgroundLighter,
+          color: theme.colors.darkTextHighEmphasis,
+          fontSize: theme.fontSizes.m,
         }}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
@@ -54,8 +60,8 @@ export default class TableRow extends React.Component {
         <div
           style={{
             flexShrink: "0",
-            width: this.props.trackColWidth,
-            padding: "4px",
+            width: "25%",
+            padding: theme.spacing.m,
           }}
         >
           {this.props.track.name}
@@ -63,8 +69,8 @@ export default class TableRow extends React.Component {
         <div
           style={{
             flexShrink: "0",
-            width: this.props.artistColWidth,
-            padding: "4px",
+            width: "25%",
+            padding: theme.spacing.m,
           }}
         >
           {this.props.track.artists.map((a, index) => (
@@ -77,13 +83,15 @@ export default class TableRow extends React.Component {
         <div
           style={{
             flexGrow: "1",
-            padding: "4px",
+            padding: theme.spacing.m,
           }}
         >
           {this.state.hover || this.state.menuOpen ? (
             <CreatableSelect
               isMulti
               isSearchable
+              backspaceRemovesValue={false}
+              isClearable={false}
               options={this.props.tagOptions}
               value={this.props.tags}
               onMenuOpen={() => {
@@ -93,13 +101,14 @@ export default class TableRow extends React.Component {
                 this.setState({ menuOpen: false });
               }}
               onChange={selectedOptions => {
-                this.props.cellMeasurerCache.clear(this.props.index);
+                /* this.props.cellMeasurerCache.clear(this.props.index); */
                 const added = _.difference(selectedOptions, this.props.tags);
                 const deleted = _.difference(this.props.tags, selectedOptions);
                 added
                   .filter(option => option.__isNew__)
                   .forEach(({ label }) => {
-                    this.props.createTagWithTrack(this.props.track.uri, label);
+                    console.log("creating createAndAddTag");
+                    this.props.createAndAddTag(this.props.track.uri, label);
                   });
                 added
                   .filter(option => !option.__isNew__)
@@ -131,7 +140,7 @@ export default class TableRow extends React.Component {
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
-                padding: "2px 81px 2px 8px",
+                padding: "2px 45px 2px 8px",
                 border: "solid 1px hsl(0,0%,80%)",
                 borderRadius: "4px",
                 minHeight: 38,

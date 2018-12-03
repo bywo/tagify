@@ -1,20 +1,39 @@
 import _ from "lodash";
 
 import xs from "xstream";
+import { createEventHandler } from "../util/recompose";
 
-export const sidebarDeltas$ = xs.create();
+const {
+  handler: onSidebarResize,
+  stream: sidebarDeltas$,
+} = createEventHandler();
+export { onSidebarResize };
 export const sidebarWidth$ = sidebarDeltas$.fold((acc, x) => acc + x, 200);
 
-export const trackColDeltas$ = xs.create();
+const {
+  handler: onTrackColResize,
+  stream: trackColDeltas$,
+} = createEventHandler();
+export { onTrackColResize };
 export const trackColWidth$ = trackColDeltas$.fold((acc, x) => acc + x, 200);
 
-export const artistColDeltas$ = xs.create();
+const {
+  handler: onArtistColResize,
+  stream: artistColDeltas$,
+} = createEventHandler();
+export { onArtistColResize };
 export const artistColWidth$ = artistColDeltas$.fold((acc, x) => acc + x, 200);
 
-export const selectedPlaylistChanges$ = xs.create();
-export const selectedPlaylist$ = selectedPlaylistChanges$.startWith(
-  "2WZ0wCi4anVUgXnYtF9HG3",
-);
+const {
+  handler: onSelectPlaylist,
+  stream: selectedPlaylistChanges$,
+} = createEventHandler();
+export { onSelectPlaylist };
+export const selectedPlaylist$ = selectedPlaylistChanges$.startWith("all");
 
-export const searchQueryChanges$ = xs.create();
+const {
+  handler: onChangeSearchQuery,
+  stream: searchQueryChanges$,
+} = createEventHandler();
+export { onChangeSearchQuery };
 export const searchQuery$ = searchQueryChanges$.startWith("");
