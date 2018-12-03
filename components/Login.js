@@ -14,7 +14,7 @@ export default class Login extends React.Component {
           .state.baseUrl +
           as(
             "/callback",
-          )}&scope=streaming%20playlist-modify-private%20playlist-modify-public`}
+          )}&scope=streaming%20playlist-read-private%20playlist-modify-private%20playlist-modify-public%20playlist-read-collaborative`}
       >
         Login to Spotify
       </a>

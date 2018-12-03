@@ -57,6 +57,7 @@ export default componentFromStream(props$ => {
           <SearchBar />
           {/* <TableHeader /> */}
           <Table
+            style={{ flexGrow: 1 }}
             filteredTracks={filteredTracks}
             tagsByTrack={tagsByTrack}
             tracksById={tracksById}

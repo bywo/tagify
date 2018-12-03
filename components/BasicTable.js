@@ -16,7 +16,13 @@ export default class BasicTable extends React.Component {
     } = this.props;
 
     return (
-      <div style={{ padding: theme.spacing.l, overflow: "auto" }}>
+      <div
+        style={{
+          padding: theme.spacing.l,
+          overflow: "auto",
+          ...this.props.style,
+        }}
+      >
         {filteredTracks.map(identifier => {
           const t = tracksById[identifier];
           const tagsForTrack = tagsByTrack[identifier];
