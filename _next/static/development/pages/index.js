@@ -108,7 +108,7 @@ if (global.window) {
       },
       __self: this
     }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_ResizeHandle__WEBPACK_IMPORTED_MODULE_2__["default"], {
-      onResize: _data_UIStore__WEBPACK_IMPORTED_MODULE_9__["onSidebarResize"],
+      onResize: _data_UIStore__WEBPACK_IMPORTED_MODULE_9__["onResizeSidebar"],
       style: {
         position: "absolute",
         right: -5,
@@ -155,10 +155,6 @@ var _jsxFileName = "/Users/byron/dev/tagify/components/BasicTable.js";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -203,10 +199,10 @@ function (_React$Component) {
           removeTag = _this$props.removeTag,
           createAndAddTag = _this$props.createAndAddTag;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        style: _objectSpread({
+        style: {
           padding: _theme__WEBPACK_IMPORTED_MODULE_2__["default"].spacing.l,
           overflow: "auto"
-        }, this.props.style),
+        },
         __source: {
           fileName: _jsxFileName,
           lineNumber: 19
@@ -235,7 +231,7 @@ function (_React$Component) {
           createAndAddTag: createAndAddTag,
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 38
+            lineNumber: 32
           },
           __self: this
         });
@@ -455,7 +451,7 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl + Object(_util_as__WEBPACK_IMPORTED_MODULE_1__["default"])("/callback"), "&scope=streaming%20playlist-read-private%20playlist-modify-private%20playlist-modify-public%20playlist-read-collaborative"),
+        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl + Object(_util_as__WEBPACK_IMPORTED_MODULE_1__["default"])("/callback"), "&scope=streaming%20playlist-modify-private%20playlist-modify-public"),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 12
@@ -567,9 +563,6 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       },
       __self: this
     }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_BasicTable__WEBPACK_IMPORTED_MODULE_9__["default"], {
-      style: {
-        flexGrow: 1
-      },
       filteredTracks: filteredTracks,
       tagsByTrack: tagsByTrack,
       tracksById: tracksById,
@@ -1075,6 +1068,7 @@ function (_React$Component) {
     value: function render() {
       var _this2 = this;
 
+      var track = this.props.track;
       return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         ref: function ref(el) {
           return _this2.root = el;
@@ -1091,7 +1085,7 @@ function (_React$Component) {
         onMouseLeave: this.onMouseLeave,
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 47
+          lineNumber: 48
         },
         __self: this
       }, react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
@@ -1102,10 +1096,10 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 60
+          lineNumber: 61
         },
         __self: this
-      }, this.props.track.name), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
+      }, track.name), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         style: {
           flexShrink: "0",
           width: "25%",
@@ -1113,18 +1107,18 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 69
+          lineNumber: 70
         },
         __self: this
-      }, this.props.track.artists.map(function (a, index) {
+      }, track.artists && track.artists.map(function (a, index) {
         return react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("span", {
           key: a.id,
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 77
+            lineNumber: 79
           },
           __self: this
-        }, a.name, index !== _this2.props.track.artists.length - 1 ? ", " : null);
+        }, a.name, index !== track.artists.length - 1 ? ", " : null);
       })), react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
         style: {
           flexGrow: "1",
@@ -1132,7 +1126,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 83
+          lineNumber: 85
         },
         __self: this
       }, this.state.hover || this.state.menuOpen ? react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement(react_select_lib_Creatable__WEBPACK_IMPORTED_MODULE_2___default.a, {
@@ -1164,19 +1158,19 @@ function (_React$Component) {
             var label = _ref.label;
             console.log("creating createAndAddTag");
 
-            _this2.props.createAndAddTag(_this2.props.track.uri, label);
+            _this2.props.createAndAddTag(track.uri, label);
           });
           added.filter(function (option) {
             return !option.__isNew__;
           }).forEach(function (_ref2) {
             var playlistId = _ref2.value;
 
-            _this2.props.addTag(_this2.props.track.uri, playlistId);
+            _this2.props.addTag(track.uri, playlistId);
           });
           deleted.forEach(function (_ref3) {
             var playlistId = _ref3.value;
 
-            _this2.props.removeTag(_this2.props.track.uri, playlistId);
+            _this2.props.removeTag(track.uri, playlistId);
           });
         },
         styles: {
@@ -1199,7 +1193,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 90
+          lineNumber: 92
         },
         __self: this
       }) : react__WEBPACK_IMPORTED_MODULE_1___default.a.createElement("div", {
@@ -1214,7 +1208,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 138
+          lineNumber: 140
         },
         __self: this
       }, this.props.tags.map(function (tag) {
@@ -1235,7 +1229,7 @@ function (_React$Component) {
           },
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 150
+            lineNumber: 152
           },
           __self: this
         }, tag.label);
@@ -1247,7 +1241,7 @@ function (_React$Component) {
         },
         __source: {
           fileName: _jsxFileName,
-          lineNumber: 169
+          lineNumber: 171
         },
         __self: this
       }, "\u2060"))));
@@ -2120,16 +2114,16 @@ function trackMatchesQuery(track, query) {
 /*!*************************!*\
   !*** ./data/UIStore.js ***!
   \*************************/
-/*! exports provided: onSidebarResize, sidebarWidth$, onTrackColResize, trackColWidth$, onArtistColResize, artistColWidth$, onSelectPlaylist, selectedPlaylist$, onChangeSearchQuery, searchQuery$ */
+/*! exports provided: onResizeSidebar, sidebarWidth$, onResizeTrackCol, trackColWidth$, onResizeArtistCol, artistColWidth$, onSelectPlaylist, selectedPlaylist$, onChangeSearchQuery, searchQuery$ */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onSidebarResize", function() { return onSidebarResize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onResizeSidebar", function() { return onResizeSidebar; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sidebarWidth$", function() { return sidebarWidth$; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onTrackColResize", function() { return onTrackColResize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onResizeTrackCol", function() { return onResizeTrackCol; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "trackColWidth$", function() { return trackColWidth$; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onArtistColResize", function() { return onArtistColResize; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onResizeArtistCol", function() { return onResizeArtistCol; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "artistColWidth$", function() { return artistColWidth$; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "onSelectPlaylist", function() { return onSelectPlaylist; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "selectedPlaylist$", function() { return selectedPlaylist$; });
@@ -2145,7 +2139,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 var _createEventHandler = Object(_util_recompose__WEBPACK_IMPORTED_MODULE_2__["createEventHandler"])(),
-    onSidebarResize = _createEventHandler.handler,
+    onResizeSidebar = _createEventHandler.handler,
     sidebarDeltas$ = _createEventHandler.stream;
 
 
@@ -2154,7 +2148,7 @@ var sidebarWidth$ = sidebarDeltas$.fold(function (acc, x) {
 }, 200);
 
 var _createEventHandler2 = Object(_util_recompose__WEBPACK_IMPORTED_MODULE_2__["createEventHandler"])(),
-    onTrackColResize = _createEventHandler2.handler,
+    onResizeTrackCol = _createEventHandler2.handler,
     trackColDeltas$ = _createEventHandler2.stream;
 
 
@@ -2163,7 +2157,7 @@ var trackColWidth$ = trackColDeltas$.fold(function (acc, x) {
 }, 200);
 
 var _createEventHandler3 = Object(_util_recompose__WEBPACK_IMPORTED_MODULE_2__["createEventHandler"])(),
-    onArtistColResize = _createEventHandler3.handler,
+    onResizeArtistCol = _createEventHandler3.handler,
     artistColDeltas$ = _createEventHandler3.stream;
 
 
@@ -55803,7 +55797,6 @@ var Stream = /** @class */ (function () {
      * @return {Stream}
      */
     Stream.prototype.compose = function (operator) {
-        console.log("compose got operator", operator)
         return operator(this);
     };
     /**
