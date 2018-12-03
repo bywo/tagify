@@ -155,6 +155,10 @@ var _jsxFileName = "/Users/byron/dev/tagify/components/BasicTable.js";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; var ownKeys = Object.keys(source); if (typeof Object.getOwnPropertySymbols === 'function') { ownKeys = ownKeys.concat(Object.getOwnPropertySymbols(source).filter(function (sym) { return Object.getOwnPropertyDescriptor(source, sym).enumerable; })); } ownKeys.forEach(function (key) { _defineProperty(target, key, source[key]); }); } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -199,10 +203,10 @@ function (_React$Component) {
           removeTag = _this$props.removeTag,
           createAndAddTag = _this$props.createAndAddTag;
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-        style: {
+        style: _objectSpread({
           padding: _theme__WEBPACK_IMPORTED_MODULE_2__["default"].spacing.l,
           overflow: "auto"
-        },
+        }, this.props.style),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 19
@@ -231,7 +235,7 @@ function (_React$Component) {
           createAndAddTag: createAndAddTag,
           __source: {
             fileName: _jsxFileName,
-            lineNumber: 32
+            lineNumber: 38
           },
           __self: this
         });
@@ -451,7 +455,7 @@ function (_React$Component) {
     key: "render",
     value: function render() {
       return react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("a", {
-        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl + Object(_util_as__WEBPACK_IMPORTED_MODULE_1__["default"])("/callback"), "&scope=streaming%20playlist-modify-private%20playlist-modify-public"),
+        href: "https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=".concat(this.state.baseUrl + Object(_util_as__WEBPACK_IMPORTED_MODULE_1__["default"])("/callback"), "&scope=streaming%20playlist-read-private%20playlist-modify-private%20playlist-modify-public%20playlist-read-collaborative"),
         __source: {
           fileName: _jsxFileName,
           lineNumber: 12
@@ -563,6 +567,9 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
       },
       __self: this
     }), react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_BasicTable__WEBPACK_IMPORTED_MODULE_9__["default"], {
+      style: {
+        flexGrow: 1
+      },
       filteredTracks: filteredTracks,
       tagsByTrack: tagsByTrack,
       tracksById: tracksById,
