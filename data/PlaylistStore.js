@@ -323,11 +323,22 @@ export const filteredTracks$ = xs
   )
   .remember();
 
+filteredTracks$.addListener({
+  next() {
+    console.log("refiltered tracks");
+  },
+
+  error(err) {
+    console.log("error filtering tracks", err);
+  },
+});
+
 function trackMatchesQuery(track, query) {
   return (
     track.name.toLowerCase().includes(query.toLowerCase()) ||
-    track.artists.some(artist =>
-      artist.name.toLowerCase().includes(query.toLowerCase()),
-    )
+    (track.artists &&
+      track.artists.some(artist =>
+        artist.name.toLowerCase().includes(query.toLowerCase()),
+      ))
   );
 }
