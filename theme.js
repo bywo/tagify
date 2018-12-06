@@ -12,6 +12,7 @@ export default {
   },
   borderRadius: {
     s: 4,
+    m: 8,
   },
   colors: {
     primary: "#437a50",
@@ -26,5 +27,6 @@ export default {
     lightTextHighEmphasis: "rgba(255, 255, 255, 0.91)",
     lightTextMedEmphasis: "rgba(255, 255, 255, 0.60)",
     lightTextLowEmphasis: "rgba(255, 255, 255, 0.38)",
+    danger: "#ba000d",
   },
 };

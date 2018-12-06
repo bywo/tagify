@@ -1,6 +1,3 @@
-import _ from "lodash";
-
-import xs from "xstream";
 import { createEventHandler } from "../util/recompose";
 
 const {
@@ -28,12 +25,12 @@ const {
   handler: onSelectPlaylist,
   stream: selectedPlaylistChanges$,
 } = createEventHandler();
-export { onSelectPlaylist };
+export { onSelectPlaylist, selectedPlaylistChanges$ };
 export const selectedPlaylist$ = selectedPlaylistChanges$.startWith("all");
 
 const {
   handler: onChangeSearchQuery,
   stream: searchQueryChanges$,
 } = createEventHandler();
-export { onChangeSearchQuery };
+export { onChangeSearchQuery, searchQueryChanges$ };
 export const searchQuery$ = searchQueryChanges$.startWith("");

@@ -4,11 +4,6 @@ import db from "./db";
 import { createEventHandler } from "../util/recompose";
 
 const tokenFromDb$ = xs.fromPromise(db.misc.get("token"));
-tokenFromDb$.addListener({
-  next(token) {
-    console.log("token from db", token);
-  },
-});
 
 const { handler: onToken, stream: tokenSets$ } = createEventHandler();
 export { onToken };
@@ -51,12 +46,6 @@ export const fetch$ = token$
     return f;
   })
   .remember();
-
-fetch$.addListener({
-  next(f) {
-    console.log("new fetch!", f);
-  },
-});
 
 export const user$ = fetch$
   .filter(f => !!f)

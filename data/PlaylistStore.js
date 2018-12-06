@@ -12,27 +12,41 @@ import * as api from "./api";
 
 const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
 
+const { handler: onError, stream: errors$ } = createEventHandler();
+const {
+  handler: dismissError,
+  stream: errorDismissals$,
+} = createEventHandler();
+export { dismissError };
+
+export const errorList$ = xs
+  .merge(
+    errors$.map(err => ({ type: "newError", payload: err })),
+    errorDismissals$.map(err => ({ type: "dismissError", payload: err })),
+  )
+  .fold((errorList, action) => {
+    if (action.type === "newError") {
+      return [...errorList, action.payload];
+    }
+    return _.without(errorList, action.payload);
+  }, []);
+
+const forwardErrorToErrorCollector = response$ =>
+  response$.replaceError(err => {
+    onError(err);
+    return xs.of();
+  });
+
 const { handler: addTag, stream: addTagEvents$ } = createEventHandler();
-export { addTag };
+export { addTag, addTagEvents$ };
 const addedTags$ = addTagEvents$
   .compose(sampleCombine(fetch$))
   .map(async ([{ trackId, playlistId }, fetch]) => {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        method: "POST",
-        body: JSON.stringify({
-          uris: [trackId],
-        }),
-      },
-    );
-
-    if (resp.ok) {
-      return { trackId, playlistId };
-    }
-    throw new Error("failed to add");
+    await api.addToPlaylist(fetch, playlistId, trackId);
+    return { trackId, playlistId };
   })
   .map(xs.fromPromise)
+  .map(forwardErrorToErrorCollector)
   .compose(flattenConcurrently);
 addedTags$.addListener({
   async next({ trackId, playlistId }) {
@@ -45,26 +59,15 @@ addedTags$.addListener({
 });
 
 const { handler: removeTag, stream: removeTagEvents$ } = createEventHandler();
-export { removeTag };
+export { removeTag, removeTagEvents$ };
 const removedTags$ = removeTagEvents$
   .compose(sampleCombine(fetch$))
   .map(async ([{ trackId, playlistId }, fetch]) => {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-      {
-        method: "DELETE",
-        body: JSON.stringify({
-          tracks: [{ uri: trackId }],
-        }),
-      },
-    );
-
-    if (resp.ok) {
-      return { trackId, playlistId };
-    }
-    throw new Error("failed to remove");
+    await api.removeFromPlaylist(fetch, playlistId, trackId);
+    return { trackId, playlistId };
   })
   .map(xs.fromPromise)
+  .map(forwardErrorToErrorCollector)
   .compose(flattenConcurrently);
 removedTags$.addListener({
   async next({ trackId, playlistId }) {
@@ -80,7 +83,7 @@ const {
   handler: createAndAddTag,
   stream: createAndAddTagEvents$,
 } = createEventHandler();
-export { createAndAddTag };
+export { createAndAddTag, createAndAddTagEvents$ };
 const createdTags$ = createAndAddTagEvents$
   .compose(sampleCombine(fetch$, user$))
   .map(async ([{ trackId, playlistName }, fetch, user]) => {
@@ -88,6 +91,7 @@ const createdTags$ = createAndAddTagEvents$
     return { trackId, playlist };
   })
   .map(xs.fromPromise)
+  .map(forwardErrorToErrorCollector)
   .compose(flattenConcurrently)
   .map(({ trackId, playlist }) =>
     xs
@@ -102,7 +106,6 @@ const createdTags$ = createAndAddTagEvents$
   .compose(flattenConcurrently);
 createdTags$.addListener({
   async next({ trackId, playlist }) {
-    console.log("created playlist", playlist, "gonna call addTag");
     addTag({ trackId, playlistId: playlist.id });
   },
 
@@ -110,20 +113,6 @@ createdTags$.addListener({
     console.error("createAndAddTag", err.stack);
   },
 });
-
-async function fetchPlaylists(
-  fetch,
-  url = "https://api.spotify.com/v1/me/playlists?limit=50",
-) {
-  const resp = await fetch(url);
-  const { next, items } = await resp.json();
-
-  let ret = items;
-  if (next) {
-    ret = items.concat(await fetchPlaylists(fetch, next));
-  }
-  return ret;
-}
 
 async function savePlaylistsToDb(playlists) {
   await db.playlists.bulkPut(
@@ -143,27 +132,19 @@ async function savePlaylistsToDb(playlists) {
 const validFetch$ = fetch$.filter(f => !!f);
 const invalidFetch$ = fetch$.filter(f => !f);
 const intervalAfterValidFetch = validFetch$
-  .map(() => {
-    console.log("interval before flatten");
-    return xs.periodic(resyncPlaylistsInterval).startWith(0);
-  })
+  .map(() => xs.periodic(resyncPlaylistsInterval).startWith(0))
   .flatten()
   .endWhen(invalidFetch$);
 // whenever we have a valid fetch token, refresh playlists
 const playlistFetches$ = xs
   .combine(validFetch$, intervalAfterValidFetch)
-  .map(([fetch]) => {
-    console.log("fetching playlists");
-    return fetchPlaylists(fetch);
-  })
+  .map(([fetch]) => api.fetchPlaylists(fetch))
   .map(xs.fromPromise)
   .flatten();
 
 playlistFetches$.addListener({
   next(ps) {
     if (ps) {
-      // HACK. try switching to xstream
-      console.log("fetched playlists", ps);
       savePlaylistsToDb(ps);
     }
   },
@@ -187,7 +168,6 @@ const playlistChanges$ = xs
   .compose(debounce(0));
 
 db.playlists.hook("deleting", async key => {
-  console.log("playlist deleting");
   _.defer(() =>
     db.playlistTracks
       .where("id")
@@ -200,7 +180,6 @@ export const playlists$ = playlistChanges$
   .startWith(undefined)
   .map(() => {
     if (process.browser) {
-      console.log("get from db");
       return db.playlists.toCollection().sortBy("index");
     }
     return Promise.resolve([]);
@@ -208,12 +187,6 @@ export const playlists$ = playlistChanges$
   .map(xs.fromPromise)
   .flatten()
   .remember();
-
-playlists$.addListener({
-  next(playlists) {
-    console.log("playlists", playlists);
-  },
-});
 
 const playlistTrackChanges$ = xs.create({
   start(listener) {
@@ -235,7 +208,6 @@ const playlistTracks$ = playlistTrackChanges$
   .compose(debounce(30))
   .map(() => {
     if (process.browser) {
-      console.log("get from db");
       return db.playlistTracks.toArray();
     }
     return Promise.resolve([]);
@@ -243,34 +215,13 @@ const playlistTracks$ = playlistTrackChanges$
   .map(xs.fromPromise)
   .flatten()
   .remember();
-playlistTracks$.addListener({
-  next(pt) {
-    console.log("playlisttracks", pt);
-  },
-});
 
 const allTracks$ = playlistTracks$
   .map(playlistTracks => _.uniq(_.flatten(_.map(playlistTracks, "trackIds"))))
   .remember();
-allTracks$.addListener({
-  next(pt) {
-    console.log("allTracks", pt);
-  },
-});
-
-async function fetchPlaylistTracks(fetch, playlistId, url) {
-  const resp = await fetch(url);
-  const { next, items } = await resp.json();
-
-  let ret = items;
-  if (next) {
-    ret = items.concat(await fetchPlaylistTracks(fetch, playlistId, next));
-  }
-  return ret;
-}
 
 async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
-  const tracks = await fetchPlaylistTracks(fetch, playlistId, url);
+  const tracks = await api.fetchPlaylistTracks(fetch, playlistId, url);
   await db.tracks.bulkPut(tracks.map(t => t.track));
   await db.playlistTracks.put({
     id: playlistId,
@@ -281,10 +232,8 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
 
 playlists$.compose(sampleCombine(playlistTracks$, fetch$)).addListener({
   next([playlists, playlistTracks, fetch]) {
-    console.log("scanning for playlists to fetch");
     for (const p of playlists) {
       if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
-        console.log("couldn't find", p.id, p.snapshot_id);
         fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href);
       }
     }
@@ -307,11 +256,6 @@ export const tagsByTrack$ = playlistTracks$
     return ret;
   })
   .remember();
-tagsByTrack$.addListener({
-  next(t) {
-    console.log("tagsByTrack", t);
-  },
-});
 
 const trackChanges$ = xs.create({
   start(listener) {
@@ -341,11 +285,6 @@ export const tracksById$ = trackChanges$
   .map(xs.fromPromise)
   .flatten()
   .remember();
-tracksById$.addListener({
-  next(t) {
-    console.log("tracksById", t);
-  },
-});
 
 export const filteredTracks$ = xs
   .combine(
@@ -383,14 +322,6 @@ export const filteredTracks$ = xs
     },
   )
   .remember();
-filteredTracks$.addListener({
-  next(t) {
-    console.log("filteredTracks", t);
-  },
-  error(e) {
-    console.error(e.stack);
-  },
-});
 
 function trackMatchesQuery(track, query) {
   return (

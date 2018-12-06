@@ -88,7 +88,7 @@ export default class TableRow extends React.Component {
             padding: theme.spacing.m,
           }}
         >
-          {this.state.hover || this.state.menuOpen ? (
+          {track.episode ? null : this.state.hover || this.state.menuOpen ? (
             <CreatableSelect
               isMulti
               isSearchable
@@ -109,7 +109,6 @@ export default class TableRow extends React.Component {
                 added
                   .filter(option => option.__isNew__)
                   .forEach(({ label }) => {
-                    console.log("creating createAndAddTag");
                     this.props.createAndAddTag(track.uri, label);
                   });
                 added

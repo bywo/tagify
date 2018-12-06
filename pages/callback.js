@@ -1,5 +1,3 @@
-import "core-js/modules/es7.symbol.observable";
-
 import React from "react";
 import Router from "next/router";
 import as from "../util/as";
@@ -18,6 +16,6 @@ export default class SpotifyAuth extends React.Component {
   }
 
   render() {
-    return <div>callback</div>;
+    return <div />;
   }
 }

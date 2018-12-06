@@ -5,7 +5,7 @@ import { componentFromStream } from "../util/recompose";
 import * as user from "../data/UserStore";
 
 export default componentFromStream(() =>
-  user.user$.map(u => (
+  user.user$.startWith({}).map(u => (
     <div
       style={{
         background: theme.colors.primary,

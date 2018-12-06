@@ -2,11 +2,12 @@ import React from "react";
 
 export default class ResizeHandle extends React.Component {
   render() {
+    const { onResize, ...rest } = this.props;
     return (
       <div
         onMouseDown={this._onMouseDown}
         onMouseUp={this._onMouseUp}
-        {...this.props}
+        {...rest}
         style={{
           cursor: "col-resize",
           ...this.props.style,

@@ -16,9 +16,15 @@ if (global.window) {
 
 export default componentFromStream(() =>
   xs
-    .combine(ui.sidebarWidth$, playlist.playlists$, ui.selectedPlaylist$)
-    .map(([sidebarWidth, playlists, selectedPlaylist]) => (
+    .combine(
+      ui.sidebarWidth$,
+      playlist.playlists$,
+      ui.selectedPlaylist$,
+      playlist.errorList$,
+    )
+    .map(([sidebarWidth, playlists, selectedPlaylist, errorList]) => (
       <div
+        key="mainApp"
         style={{
           height: "100vh",
           display: "flex",
@@ -64,6 +70,31 @@ export default componentFromStream(() =>
               flexGrow: 1,
             }}
           />
+        </div>
+        <div
+          style={{
+            position: "fixed",
+            bottom: theme.spacing.l,
+            right: theme.spacing.l,
+          }}
+        >
+          {errorList.map((err, i) => (
+            <div
+              key={i}
+              onClick={() => playlist.dismissError(err)}
+              style={{
+                background: theme.colors.danger,
+                color: theme.colors.lightTextHighEmphasis,
+                fontSize: theme.fontSizes.m,
+                padding: theme.spacing.m,
+                borderRadius: theme.borderRadius.s,
+                cursor: "pointer",
+                marginTop: theme.spacing.m,
+              }}
+            >
+              {err.message}
+            </div>
+          ))}
         </div>
       </div>
     )),
