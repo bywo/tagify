@@ -702,9 +702,17 @@ var filteredTracks$ = xstream__WEBPACK_IMPORTED_MODULE_1___default.a.combine(_UI
     return track && trackMatchesQuery(track, searchQuery);
   });
 }).remember();
+filteredTracks$.addListener({
+  next: function next() {
+    console.log("refiltered tracks");
+  },
+  error: function error(err) {
+    console.log("error filtering tracks", err);
+  }
+});
 
 function trackMatchesQuery(track, query) {
-  return track.name.toLowerCase().includes(query.toLowerCase()) || track.artists.some(function (artist) {
+  return track.name.toLowerCase().includes(query.toLowerCase()) || track.artists && track.artists.some(function (artist) {
     return artist.name.toLowerCase().includes(query.toLowerCase());
   });
 }
