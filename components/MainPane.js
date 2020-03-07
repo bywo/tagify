@@ -9,8 +9,8 @@ import * as playlist from "../data/PlaylistStore";
 import * as ui from "../data/UIStore";
 import theme from "../theme";
 
-// import Table from "./VirtualizedTable";
-import Table from "./BasicTable";
+import Table from "./VirtualizedTable";
+// import Table from "./BasicTable";
 import SearchBar from "./SearchBar";
 import TableHeader from "./TableHeader";
 
@@ -30,6 +30,7 @@ export default componentFromStream(props$ => {
 
   return xs
     .combine(
+      ui.selectedPlaylist$,
       playlist.filteredTracks$,
       playlist.tagsByTrack$,
       playlist.tracksById$,
@@ -39,6 +40,7 @@ export default componentFromStream(props$ => {
     )
     .map(
       ([
+        selectedPlaylist,
         filteredTracks,
         tagsByTrack,
         tracksById,
@@ -57,6 +59,8 @@ export default componentFromStream(props$ => {
           <SearchBar />
           {/* <TableHeader /> */}
           <Table
+            key={selectedPlaylist}
+            selectedPlaylist={selectedPlaylist}
             style={{ flexGrow: 1 }}
             filteredTracks={filteredTracks}
             tagsByTrack={tagsByTrack}
