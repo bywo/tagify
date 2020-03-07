@@ -2,6 +2,20 @@ import React from "react";
 import as from "../util/as";
 import theme from "../theme";
 
+const scopes = [
+  "streaming",
+  "user-read-email",
+  "user-read-private",
+  "user-read-playback-state",
+  "user-modify-playback-state",
+  "user-library-read",
+  "user-library-modify",
+  "playlist-read-private",
+  "playlist-modify-private",
+  "playlist-modify-public",
+  "playlist-read-collaborative",
+];
+
 export default class Login extends React.Component {
   state = { baseUrl: "" };
 
@@ -33,10 +47,7 @@ export default class Login extends React.Component {
             marginTop: theme.spacing.l,
           }}
           href={`https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=${this
-            .state.baseUrl +
-            as(
-              "/callback",
-            )}&scope=streaming%20playlist-read-private%20playlist-modify-private%20playlist-modify-public%20playlist-read-collaborative`}
+            .state.baseUrl + as("/callback")}&scope=${scopes.join("%20")}`}
         >
           Login to Spotify
         </a>

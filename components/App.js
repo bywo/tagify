@@ -37,6 +37,9 @@ export default componentFromStream(() =>
             display: "flex",
             alignItems: "stretch",
             flexGrow: 1,
+            flexBasis: 0,
+            flexShrink: 1,
+            overflow: "hidden",
           }}
         >
           <div

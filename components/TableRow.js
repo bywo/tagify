@@ -1,6 +1,6 @@
 import _ from "lodash";
 import React from "react";
-import CreatableSelect from "react-select/lib/Creatable";
+import CreatableSelect from "react-select/creatable";
 import { components } from "react-select";
 import theme from "../theme";
 
@@ -57,6 +57,9 @@ export default class TableRow extends React.Component {
         }}
         onMouseEnter={this.onMouseEnter}
         onMouseLeave={this.onMouseLeave}
+        onDoubleClick={() => {
+          this.props.play([track.uri]);
+        }}
       >
         <div
           style={{
