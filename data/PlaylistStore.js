@@ -1,7 +1,9 @@
 import xs from "xstream";
 import debounce from "xstream/extra/debounce";
 import sampleCombine from "xstream/extra/sampleCombine";
+import dropUntil from "xstream/extra/dropUntil";
 import flattenConcurrently from "xstream/extra/flattenConcurrently";
+import dropRepeats from "xstream/extra/dropRepeats";
 import _ from "lodash";
 import db from "./db";
 import { user$, fetch$ } from "./UserStore";
@@ -10,7 +12,33 @@ import { selectedPlaylist$ } from "./UIStore";
 import { createEventHandler } from "../util/recompose";
 import * as api from "./api";
 
+// Querying
+// All tracks: all records in tracks collection
+// tracks by name: create track.artistName array. use multiEntry index
+// tracks by playlist: ???
+
 const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
+
+async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
+  const savePage = async tracks => {
+    await db.tracks.bulkPut(tracks.map(t => t.track));
+  };
+
+  const tracks = await api.fetchPlaylistTracks(
+    fetch,
+    playlistId,
+    url,
+    savePage,
+  );
+
+  await db.playlistTracks.put({
+    id: playlistId,
+    snapshot_id: snapshotId,
+    trackIds: tracks.map(t => t.track.uri),
+  });
+
+  return playlistId;
+}
 
 const { handler: onError, stream: errors$ } = createEventHandler();
 const {
@@ -96,9 +124,9 @@ const createdTags$ = createAndAddTagEvents$
   .map(({ trackId, playlist }) =>
     xs
       .combine(
-        playlistTracks$
-          .filter(playlistTracks => _.find(playlistTracks, { id: playlist.id }))
-          .take(1),
+        // playlistTracks$
+        //   .filter(playlistTracks => _.find(playlistTracks, { id: playlist.id }))
+        //   .take(1),
         xs.fromPromise(db.playlists.put(playlist)),
       )
       .mapTo({ trackId, playlist }),
@@ -203,8 +231,61 @@ const playlistTrackChanges$ = xs.create({
   stop() {},
 });
 
-const playlistTracks$ = playlistTrackChanges$
-  .startWith(undefined)
+const playlistsTracksToFetch$ = playlists$
+  .map(async playlists => {
+    const playlistTracks = await db.playlistTracks.toArray();
+    const toFetch = playlists.filter(p => {
+      return !_.find(playlistTracks, {
+        id: p.id,
+        snapshot_id: p.snapshot_id,
+      });
+    });
+    return xs.fromArray(toFetch);
+  })
+  .map(xs.fromPromise)
+  .flatten()
+  .flatten();
+
+const playlistTrackFetches$ = playlistsTracksToFetch$
+  .compose(sampleCombine(fetch$))
+  .map(([p, fetch]) => {
+    return xs.fromPromise(
+      fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href),
+    );
+  })
+  .compose(flattenConcurrently);
+
+const playlistTrackFetchQueue$ = xs
+  .merge(
+    playlistsTracksToFetch$.map(p => ({ type: "add", playlistId: p.id })),
+    playlistTrackFetches$.map(playlistId => ({ type: "remove", playlistId })),
+  )
+  .fold((acc, t) => {
+    if (t.type === "add") {
+      return [...acc, t.playlistId];
+    }
+    return _.without(acc, t.playlistId);
+  }, []);
+
+const initStarted$ = validFetch$.take(1);
+
+const isPerformingInitialFetches$ = playlistTrackFetchQueue$
+  .compose(sampleCombine(initStarted$))
+  .map(([fetchQueue, initStarted]) => {
+    if (fetchQueue.length === 0 && initStarted) {
+      return false;
+    }
+    return true;
+  })
+  .compose(dropRepeats());
+
+const playlistTracks$ = xs
+  .merge(
+    playlistTrackChanges$.compose(
+      sampleCombine(isPerformingInitialFetches$.filter(v => v === false)),
+    ),
+    isPerformingInitialFetches$.filter(v => v === false),
+  )
   .compose(debounce(30))
   .map(() => {
     if (process.browser) {
@@ -219,26 +300,6 @@ const playlistTracks$ = playlistTrackChanges$
 const allTracks$ = playlistTracks$
   .map(playlistTracks => _.uniq(_.flatten(_.map(playlistTracks, "trackIds"))))
   .remember();
-
-async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
-  const tracks = await api.fetchPlaylistTracks(fetch, playlistId, url);
-  await db.tracks.bulkPut(tracks.map(t => t.track));
-  await db.playlistTracks.put({
-    id: playlistId,
-    snapshot_id: snapshotId,
-    trackIds: tracks.map(t => t.track.uri),
-  });
-}
-
-playlists$.compose(sampleCombine(playlistTracks$, fetch$)).addListener({
-  next([playlists, playlistTracks, fetch]) {
-    for (const p of playlists) {
-      if (!_.find(playlistTracks, { id: p.id, snapshot_id: p.snapshot_id })) {
-        fetchAndSavePlaylistTracks(fetch, p.id, p.snapshot_id, p.tracks.href);
-      }
-    }
-  },
-});
 
 export const tagsByTrack$ = playlistTracks$
   .map(playlistTracks => {
@@ -272,8 +333,13 @@ const trackChanges$ = xs.create({
   stop() {},
 });
 
-export const tracksById$ = trackChanges$
-  .startWith(undefined)
+export const tracksById$ = xs
+  .merge(
+    trackChanges$.compose(
+      dropUntil(isPerformingInitialFetches$.filter(v => v === false)),
+    ),
+    isPerformingInitialFetches$.filter(v => v === false),
+  )
   .compose(debounce(30))
   .map(async () => {
     if (process.browser) {
@@ -282,9 +348,14 @@ export const tracksById$ = trackChanges$
     }
     return Promise.resolve({});
   })
+  .debug("tracksById")
   .map(xs.fromPromise)
   .flatten()
   .remember();
+
+tracksById$.subscribe({
+  next: () => {},
+});
 
 export const filteredTracks$ = xs
   .combine(

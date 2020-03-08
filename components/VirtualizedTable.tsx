@@ -37,7 +37,7 @@ export default function BasicTable({
       : [];
 
     if (!t) {
-      return null;
+      return <div style={{ padding: 10 }}>Loading...</div>;
     }
 
     return (
