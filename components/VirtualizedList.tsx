@@ -89,8 +89,9 @@ export default function VirtualizedList<T>({
               onMeasure={onMeasure}
               style={{
                 position: "absolute",
+                top: offsetTop,
                 width: "100%",
-                transform: `translateY(${offsetTop}px)`,
+                // transform: `translateY(${offsetTop}px)`,
               }}
             />
           );
