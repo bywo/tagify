@@ -19,6 +19,8 @@ import * as api from "./api";
 
 const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
 
+// Array<{playlistId, trackId}>
+let pendingPlaylistAdds = [];
 async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
   const savePage = async tracks => {
     await db.tracks.bulkPut(tracks.map(t => t.track));
@@ -31,10 +33,22 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
     savePage,
   );
 
+  let trackIds = tracks.map(t => t.track.uri);
+
+  // HACK: working around race condition when creating new playlist and adding track
+  const pendingAdds = pendingPlaylistAdds.filter(
+    ({ playlistId: pId }) => pId === playlistId,
+  );
+  pendingPlaylistAdds = _.without(pendingPlaylistAdds, ...pendingAdds);
+  trackIds = _.uniq([
+    ...trackIds,
+    ...pendingAdds.map(({ trackId }) => trackId),
+  ]);
+
   await db.playlistTracks.put({
     id: playlistId,
     snapshot_id: snapshotId,
-    trackIds: tracks.map(t => t.track.uri),
+    trackIds,
   });
 
   return playlistId;
@@ -79,7 +93,11 @@ const addedTags$ = addTagEvents$
 addedTags$.addListener({
   async next({ trackId, playlistId }) {
     const pt = await db.playlistTracks.get(playlistId);
-    if (!pt.trackIds.includes(trackId)) {
+    if (!pt) {
+      // HACK: working around race condition where initial fetch of new playlist's tracks
+      // fires concurrently with POSTing new tracks
+      pendingPlaylistAdds = [...pendingPlaylistAdds, { playlistId, trackId }];
+    } else if (!pt.trackIds.includes(trackId)) {
       pt.trackIds.push(trackId);
       await db.playlistTracks.put(pt);
     }
@@ -216,6 +234,10 @@ export const playlists$ = playlistChanges$
   .flatten()
   .remember();
 
+export const tagsById$ = playlists$
+  .map(playlists => _.keyBy(playlists, "id"))
+  .remember();
+
 const playlistTrackChanges$ = xs.create({
   start(listener) {
     db.playlistTracks.hook("creating", () => listener.next());
@@ -269,7 +291,7 @@ const playlistTrackFetchQueue$ = xs
 
 const initStarted$ = validFetch$.take(1);
 
-const isPerformingInitialFetches$ = playlistTrackFetchQueue$
+const isFetchingPlaylistTracks$ = playlistTrackFetchQueue$
   .compose(sampleCombine(initStarted$))
   .map(([fetchQueue, initStarted]) => {
     if (fetchQueue.length === 0 && initStarted) {
@@ -279,12 +301,23 @@ const isPerformingInitialFetches$ = playlistTrackFetchQueue$
   })
   .compose(dropRepeats());
 
+// once we hit false, only return false
+export const isPerformingInitialFetches$ = isFetchingPlaylistTracks$
+  .fold((acc, next) => {
+    if (acc === false) {
+      return false;
+    }
+    return next;
+  }, true)
+  .compose(dropRepeats())
+  .remember();
+
 const playlistTracks$ = xs
   .merge(
     playlistTrackChanges$.compose(
-      sampleCombine(isPerformingInitialFetches$.filter(v => v === false)),
+      sampleCombine(isFetchingPlaylistTracks$.filter(v => v === false)),
     ),
-    isPerformingInitialFetches$.filter(v => v === false),
+    isFetchingPlaylistTracks$.filter(v => v === false),
   )
   .compose(debounce(30))
   .map(() => {
@@ -297,7 +330,7 @@ const playlistTracks$ = xs
   .flatten()
   .remember();
 
-const allTracks$ = playlistTracks$
+export const allTracks$ = playlistTracks$
   .map(playlistTracks => _.uniq(_.flatten(_.map(playlistTracks, "trackIds"))))
   .remember();
 
@@ -336,9 +369,9 @@ const trackChanges$ = xs.create({
 export const tracksById$ = xs
   .merge(
     trackChanges$.compose(
-      dropUntil(isPerformingInitialFetches$.filter(v => v === false)),
+      dropUntil(isFetchingPlaylistTracks$.filter(v => v === false)),
     ),
-    isPerformingInitialFetches$.filter(v => v === false),
+    isFetchingPlaylistTracks$.filter(v => v === false),
   )
   .compose(debounce(30))
   .map(async () => {
@@ -357,41 +390,94 @@ tracksById$.subscribe({
   next: () => {},
 });
 
-export const filteredTracks$ = xs
-  .combine(
-    selectedPlaylist$,
-    playlistTracks$,
-    allTracks$,
-    tracksById$,
-    ui.searchQuery$,
-  )
-  .map(
-    ([
-      selectedPlaylist,
-      playlistTracks,
-      allTracks,
-      tracksById,
-      searchQuery,
-    ]) => {
-      let tracks;
-      if (selectedPlaylist === "all") {
-        tracks = allTracks;
-      } else {
+const trackIdsFilteredByQueryTags$ = xs
+  .combine(ui.tagQuery$, playlistTracks$)
+  .map(([query, playlistTracks]) => {
+    const trackIds = _.uniq(
+      query.flatMap(id => {
         const playlistTrack = playlistTracks.find(
           pt => pt.id === selectedPlaylist,
         );
-        tracks = playlistTrack ? playlistTrack.trackIds : [];
-      }
 
-      if (!searchQuery) {
-        return tracks;
-      }
-      return tracks.filter(trackId => {
-        const track = tracksById[trackId];
-        return track && trackMatchesQuery(track, searchQuery);
+        return playlistTrack ? playlistTrack.trackIds : [];
+      }),
+    );
+  });
+
+export const tagsWithNumOverlapping$ = xs
+  .combine(ui.tagQuery$, playlists$, playlistTracks$)
+  .map(([tagQuery, playlists, playlistTracks]) => {
+    console.log("in here", tagQuery);
+    if (tagQuery.length) {
+      const trackIdsInQuery = _.intersection(
+        ...tagQuery.map(id => {
+          const playlistTrack = playlistTracks.find(pt => pt.id === id);
+
+          return playlistTrack ? playlistTrack.trackIds : [];
+        }),
+      );
+
+      const playlistsNotInQuery = playlists.filter(
+        p => !tagQuery.includes(p.id),
+      );
+      return playlistsNotInQuery.map(p => {
+        const pt = playlistTracks.find(pt => pt.id === p.id);
+        const trackIds = pt ? pt.trackIds : [];
+        return {
+          tag: p,
+          numOverlapping: _.intersection(trackIdsInQuery, trackIds).length,
+        };
       });
-    },
+    } else {
+      return playlists.map(p => ({
+        tag: p,
+        numOverlapping: p.tracks.total,
+      }));
+    }
+  })
+  .debug("tagsWithNum")
+  .remember();
+
+// export const tagsByNumOverlappingTracks$ = xs
+//   .combine(trackIdsFilteredByQueryTags$, tagsByTrack$, ui.tagQuery$)
+//   .map(([trackIds, tagsByTrack, query]) => {
+//     return _.without(
+//       _.uniq(trackIds.flatMap(id => tagsByTrack[id])),
+//       query.tags,
+//     );
+//   });
+
+// TODO: use trackIdsFilteredByQueryTags
+export const filteredTracks$ = xs
+  .combine(
+    ui.tagQuery$,
+    playlistTracks$,
+    allTracks$,
+    tracksById$,
+    ui.searchText$,
   )
+  .map(([tagQuery, playlistTracks, allTracks, tracksById, searchText]) => {
+    let tracks;
+    if (tagQuery.length === 0) {
+      tracks = allTracks;
+    } else {
+      tracks = _.intersection(
+        ...tagQuery.map(id => {
+          const playlistTrack = playlistTracks.find(pt => pt.id === id);
+
+          return playlistTrack ? playlistTrack.trackIds : [];
+        }),
+      );
+    }
+
+    if (!searchText) {
+      return tracks;
+    }
+    return tracks.filter(trackId => {
+      const track = tracksById[trackId];
+      return track && trackMatchesQuery(track, searchText);
+    });
+  })
   .remember();
 
 filteredTracks$.addListener({

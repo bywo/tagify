@@ -16,6 +16,9 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.28",
+    "@material-ui/core": "^4.9.7",
+    "@material-ui/icons": "^4.9.1",
+    "@rooks/use-timeout": "^3.6.0",
     "@types/react": "^16.9.23",
     "@types/recompose": "^0.30.7",
     "@zeit/next-css": "^1.0.1",
@@ -33,6 +36,7 @@
     "react": "^16.13.0",
     "react-dom": "^16.13.0",
     "react-ga": "^2.7.0",
+    "react-responsive": "^8.0.3",
     "react-script-hook": "^1.0.15",
     "react-select": "^3.0.8",
     "recompose": "^0.30.0",
@@ -42,6 +46,7 @@
   "devDependencies": {
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.7.7",
+    "@types/react-responsive": "^8.0.2",
     "@types/use-resize-observer": "^6.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.8.0",

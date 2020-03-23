@@ -1,9 +1,18 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Login from "../components/Login";
 import App from "../components/App";
 import { token$ } from "../data/UserStore";
-import { componentFromStream } from "../util/recompose";
+import { setIsSearchingByTags } from "../data/UIStore";
+import useXstream from "../hooks/useXstream";
 
-export default componentFromStream(() =>
-  token$.map(token => (token ? <App /> : <Login />)),
-);
+export default function Index({ query }) {
+  const token = useXstream(token$, "unknown");
+
+  if (token === "unknown") {
+    return null;
+  }
+
+  return token ? <App /> : <Login />;
+}
+
+Index.getInitialProps = ({ query }) => ({ query });

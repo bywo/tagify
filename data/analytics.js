@@ -54,7 +54,7 @@ playlist.createAndAddTagEvents$.addListener({
   },
 });
 
-ui.searchQueryChanges$.compose(debounce(500)).addListener({
+ui.searchTextChanges$.compose(debounce(500)).addListener({
   next(query) {
     ReactGA.event({
       category: "Navigation",

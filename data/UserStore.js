@@ -3,21 +3,25 @@ import dropRepeats from "xstream/extra/dropRepeats";
 import db from "./db";
 import { createEventHandler } from "../util/recompose";
 
-const tokenFromDb$ = xs.fromPromise(db.misc.get("token"));
-
 const { handler: onToken, stream: tokenSets$ } = createEventHandler();
 export { onToken };
 tokenSets$.addListener({
   next(token) {
+    console.log("after token set", token);
     db.misc.put(token, "token");
   },
 });
 
+// race tokenSets and db.get against each other and take the winner.
+// handles race condition where token is empty at boot, but gets set right on load
+const tokenFromDb$ = xs
+  .merge(tokenSets$, xs.fromPromise(db.misc.get("token")))
+  .take(1);
+
 export const token$ = xs
-  .combine(tokenFromDb$, tokenSets$.startWith(undefined))
-  .map(([fromDb, fromSet]) => (fromSet !== undefined ? fromSet : fromDb))
+  .merge(tokenFromDb$, tokenSets$)
   .compose(dropRepeats())
-  .startWith(undefined);
+  .remember();
 
 // TODO: Subject that works when we subscribe late
 export const fetch$ = token$

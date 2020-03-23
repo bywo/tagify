@@ -1,9 +1,9 @@
 export default {
   spacing: {
-    s: 4,
-    m: 8,
-    l: 16,
-    xl: 32,
+    s: 6,
+    m: 12,
+    l: 18,
+    xl: 36,
   },
   fontSizes: {
     s: 12,
@@ -11,13 +11,13 @@ export default {
     l: 20,
   },
   borderRadius: {
-    s: 4,
-    m: 8,
+    s: 6,
+    m: 12,
   },
   colors: {
-    primary: "#437a50",
-    primaryLight: "#71a97c",
-    primaryDark: "#154d27",
+    primary: "#2CC987",
+    primaryLight: "#39F1A4",
+    primaryDark: "#1A9963",
     background: "#E1E2E1",
     backgroundLight: "#F5F5F6",
     backgroundLighter: "#FEFEFF",

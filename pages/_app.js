@@ -14,14 +14,16 @@ export default withGA(
     <>
       <Head>
         <link
-          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600"
+          href="https://fonts.googleapis.com/css?family=Raleway:400,500i,600,700&display=swap"
           rel="stylesheet"
         />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <style global jsx>
         {`
           body {
-            font-family: "Source Sans Pro", sans-serif;
+            font-family: Raleway, sans-serif;
+            background: #ddd;
           }
 
           * {

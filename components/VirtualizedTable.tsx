@@ -3,9 +3,9 @@ import TableRow from "./TableRow";
 import theme from "../theme";
 import { useSpotifyControls } from "../hooks/useSpotifyPlayer";
 import VirtualizedList from "./VirtualizedList";
+import * as _ from "lodash";
 
 export default function BasicTable({
-  selectedPlaylist,
   filteredTracks,
   tagsByTrack,
   tracksById,
@@ -15,8 +15,9 @@ export default function BasicTable({
   removeTag,
   createAndAddTag,
   style,
+  tagQuery,
+  onClickTrack,
 }: {
-  selectedPlaylist: string;
   filteredTracks: string[];
   tagsByTrack: { [k: string]: string[] };
   tracksById: { [k: string]: any };
@@ -25,7 +26,9 @@ export default function BasicTable({
   addTag: (trackUri: string, playlistId: string) => void;
   removeTag: (trackUri: string, playlistId: string) => void;
   createAndAddTag: (trackUri: string, playlistName: string) => void;
-  style: any;
+  style: React.CSSProperties;
+  tagQuery: string[];
+  onClickTrack: (trackUri: string) => void;
 }) {
   const { play } = useSpotifyControls();
 
@@ -33,7 +36,9 @@ export default function BasicTable({
     const t = tracksById[identifier];
     const tagsForTrack = tagsByTrack[identifier];
     const tags = tagsForTrack
-      ? tagsForTrack.map(playlistId => tagSelectOptionsMap[playlistId])
+      ? _.without(tagsForTrack, ...tagQuery).map(
+          playlistId => tagSelectOptionsMap[playlistId],
+        )
       : [];
 
     if (!t) {
@@ -52,13 +57,13 @@ export default function BasicTable({
         removeTag={removeTag}
         createAndAddTag={createAndAddTag}
         play={play}
+        onClick={onClickTrack}
       />
     );
   }
 
   return (
     <VirtualizedList
-      key={selectedPlaylist}
       style={style}
       items={filteredTracks}
       renderItem={renderItem}
