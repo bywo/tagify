@@ -23,7 +23,8 @@ const resyncPlaylistsInterval = 1000 * 60 * 10; // 10 minutes
 let pendingPlaylistAdds = [];
 async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
   const savePage = async tracks => {
-    await db.tracks.bulkPut(tracks.map(t => t.track));
+    // some tracks in the playlist aren't actually tracks, so t.track won't exist
+    await db.tracks.bulkPut(tracks.filter(t => t.track).map(t => t.track));
   };
 
   const tracks = await api.fetchPlaylistTracks(
@@ -33,7 +34,7 @@ async function fetchAndSavePlaylistTracks(fetch, playlistId, snapshotId, url) {
     savePage,
   );
 
-  let trackIds = tracks.map(t => t.track.uri);
+  let trackIds = tracks.filter(t => t.track).map(t => t.track.uri);
 
   // HACK: working around race condition when creating new playlist and adding track
   const pendingAdds = pendingPlaylistAdds.filter(

@@ -13,7 +13,13 @@ import SearchInput from "./SearchInput";
 import theme from "../theme";
 import Row from "./Row";
 
-export default function TrackDetail({ trackId }: { trackId: string }) {
+export default function TrackDetail({
+  trackId,
+  style,
+}: {
+  trackId: string;
+  style: React.CSSProperties;
+}) {
   const tracksById = useXstream(tracksById$);
   const track = tracksById && tracksById[trackId];
   const tagsByTrack = useXstream(
@@ -54,6 +60,7 @@ export default function TrackDetail({ trackId }: { trackId: string }) {
           flexDirection: "column",
           height: "100%",
           background: "#fff",
+          ...style,
         }}
       >
         <div
@@ -154,6 +161,7 @@ export default function TrackDetail({ trackId }: { trackId: string }) {
         padding: "24px 24px 48px",
         position: "relative",
         background: "#fff",
+        ...style,
       }}
     >
       <div
