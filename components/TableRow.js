@@ -4,7 +4,9 @@ import CreatableSelect from "react-select/creatable";
 import { components } from "react-select";
 import theme from "../theme";
 import { baseStyles } from "./Tag";
-import ArrowForward from "@material-ui/icons/ArrowForward";
+import PlayCircleFilled from "@material-ui/icons/PlayCircleFilled";
+import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
+import { setTagQuery, onChangeFocusedTrack } from "../data/UIStore";
 
 const { MultiValue, SelectContainer } = components;
 
@@ -60,8 +62,7 @@ export default class TableRow extends React.Component {
         }}
         // onMouseEnter={this.onMouseEnter}
         // onMouseLeave={this.onMouseLeave}
-        onClick={() => this.props.onClick(track.uri)}
-        onDoubleClick={() => {
+        onClick={() => {
           this.props.play([track.uri]);
         }}
       >
@@ -70,7 +71,6 @@ export default class TableRow extends React.Component {
             style={{
               flexGrow: 1,
               padding: theme.spacing.m,
-              paddingRight: 0,
               minWidth: "33%",
               maxWidth: "100%",
             }}
@@ -103,15 +103,18 @@ export default class TableRow extends React.Component {
                 ))}
             </div>
           </div>
-          <div style={{ lineHeight: 0, alignSelf: "center", marginRight: 12 }}>
-            <ArrowForward />
-          </div>
+          <PlayCircleFilled
+            style={{
+              alignSelf: "center",
+              marginRight: 12,
+            }}
+          />
         </div>
         <div
           style={{
             flexGrow: "1",
-            padding: `${theme.spacing.s}px ${theme.spacing.m}px`,
-            textAlign: "right",
+            padding: `0 ${theme.spacing.m}px ${theme.spacing.s}px`,
+            textAlign: "left",
             lineHeight: 0,
             minWidth: 0,
           }}
@@ -125,10 +128,29 @@ export default class TableRow extends React.Component {
                 margin: "0 3px 3px 0",
                 maxWidth: "100%",
               }}
+              onClick={e => {
+                e.stopPropagation();
+                setTagQuery([tag.value]);
+              }}
             >
               {tag.label}
             </div>
           ))}
+          <div
+            style={{
+              display: "inline-block",
+              lineHeight: 0,
+              verticalAlign: "middle",
+              padding: "0 3px",
+              // margin: "0 3px 3px 0",
+            }}
+            onClick={e => {
+              e.stopPropagation();
+              onChangeFocusedTrack(track.uri);
+            }}
+          >
+            <PlaylistAdd fontSize="small" />
+          </div>
         </div>
       </div>
     );

@@ -6,6 +6,8 @@ export default function SearchInput({
   value,
   children,
   onChange,
+  onFocus,
+  onBlur,
   style,
   inputStyle,
 }: {
@@ -15,6 +17,8 @@ export default function SearchInput({
   onChange: (v: string) => void;
   style?: React.CSSProperties;
   inputStyle?: React.CSSProperties;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,7 +34,9 @@ export default function SearchInput({
         padding: `${theme.spacing.s}px`,
         ...style,
       }}
-      onClick={() => inputRef.current && inputRef.current.focus()}
+      onClick={() => {
+        inputRef.current && inputRef.current.focus();
+      }}
     >
       {children}
       <input
@@ -39,6 +45,8 @@ export default function SearchInput({
         onChange={e => {
           onChange(e.target.value);
         }}
+        onFocus={onFocus}
+        onBlur={onBlur}
         placeholder={
           !value &&
           (!children || (Array.isArray(children) && children.length === 0))

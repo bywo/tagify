@@ -5,13 +5,15 @@ export default ({
   id,
   name,
   style,
+  onMouseDown,
   onClick,
   icon,
 }: {
   id: string;
   name: string;
   style?: any;
-  onClick?: any;
+  onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
   icon?: "close";
 }) => (
   <div
@@ -21,6 +23,7 @@ export default ({
       cursor: onClick ? "pointer" : undefined,
       ...style,
     }}
+    onMouseDown={onMouseDown}
     onClick={onClick}
   >
     {name}

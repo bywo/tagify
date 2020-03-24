@@ -31,7 +31,8 @@ export default function TrackDetail({
   const tagsById = useXstream(playlist.tagsById$);
   const allTags = useXstream(playlist.playlists$ as MemoryStream<any[]>, []);
 
-  const [isEditingTags, setIsEditingTags] = useState(false);
+  // const [isEditingTags, setIsEditingTags] = useState(false);
+  const isEditingTags = true;
   const [tagSearchText, onChangeTagSearchText] = useState("");
 
   const tagsForTrack = tagsByTrack[trackId];
@@ -68,44 +69,84 @@ export default function TrackDetail({
             display: "flex",
             alignItems: "center",
             padding: theme.spacing.m,
+            paddingBottom: 0,
+          }}
+        >
+          <div style={{ fontWeight: 800, fontSize: "24px", flexGrow: 1 }}>
+            Edit tags
+          </div>
+          <div
+            style={{ lineHeight: 0, marginLeft: 12, cursor: "pointer" }}
+            onClick={() => onChangeFocusedTrack(undefined)}
+          >
+            <Done />
+          </div>
+        </div>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: "14px",
+            padding: theme.spacing.m,
             borderBottom: "solid 1px #bbb",
           }}
         >
           <div
-            style={{
-              flexGrow: 1,
-              fontWeight: 600,
-              fontSize: "14px",
-            }}
+            style={{ display: "flex", alignItems: "center", marginBottom: 12 }}
           >
-            <div style={{ marginBottom: 6 }}>Edit tags for {track.name}:</div>
-            <SearchInput
-              value={tagSearchText}
-              placeholder="Filter by tags"
-              onChange={onChangeTagSearchText}
-              style={{ paddingBottom: 3, flexGrow: 1 }}
-              inputStyle={{ marginBottom: 3 }}
-            >
-              {tags.map(t => (
-                <Tag
-                  id={t.id}
-                  key={t.id}
-                  style={{ marginRight: 3, marginBottom: 3 }}
-                  name={t.name}
-                  icon="close"
-                  onClick={() => {
-                    playlist.removeTag({ trackId, playlistId: t.id });
-                  }}
-                />
-              ))}
-            </SearchInput>
+            <img
+              style={{
+                width: 60,
+                height: 60,
+                marginRight: 12,
+                background: "gray",
+              }}
+              src={track.album.images[1].url}
+            />
+            <div style={{ flexGrow: 1, flexBasis: 0 }}>
+              <div
+                style={{
+                  fontSize: "21px",
+                  fontWeight: 800,
+                  marginBottom: 3,
+                }}
+              >
+                {track.name}
+              </div>
+              <div
+                style={{
+                  fontSize: "14px",
+                }}
+              >
+                {track.artists &&
+                  track.artists.map((a: any, index: number) => (
+                    <span key={a.id}>
+                      {a.name}
+                      {index !== track.artists.length - 1 ? ", " : null}
+                    </span>
+                  ))}
+              </div>{" "}
+            </div>
           </div>
-          <div
-            style={{ lineHeight: 0, marginLeft: 12, cursor: "pointer" }}
-            onClick={() => setIsEditingTags(false)}
+          <SearchInput
+            value={tagSearchText}
+            placeholder="Filter by tags"
+            onChange={onChangeTagSearchText}
+            style={{ paddingBottom: 3, flexGrow: 1 }}
+            inputStyle={{ marginBottom: 3 }}
           >
-            <Done />
-          </div>
+            {tags.map(t => (
+              <Tag
+                id={t.id}
+                key={t.id}
+                style={{ marginRight: 3, marginBottom: 3 }}
+                name={t.name}
+                icon="close"
+                onClick={() => {
+                  playlist.removeTag({ trackId, playlistId: t.id });
+                }}
+              />
+            ))}
+          </SearchInput>
         </div>
         <div style={{ flexGrow: 1, flexBasis: 0, overflow: "auto" }}>
           {tagSearchText.length > 0 && filtered.length === 0 ? (
@@ -209,7 +250,7 @@ export default function TrackDetail({
           alignItems: "center",
           cursor: "pointer",
         }}
-        onClick={() => setIsEditingTags(true)}
+        // onClick={() => setIsEditingTags(true)}
       >
         <div style={{ display: "flex", alignItems: "center", marginBottom: 6 }}>
           <div style={{ fontWeight: 800, marginRight: 6 }}>Tags</div>{" "}

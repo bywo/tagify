@@ -45,8 +45,6 @@ export default componentFromStream(() =>
         >
           {isPerformingInitialFetches ? (
             <LoadingScreen />
-          ) : isSearchingByTags ? (
-            <TagSearchScreen style={{ height: "100%" }} />
           ) : focusedTrack != undefined ? (
             <TrackDetail trackId={focusedTrack} />
           ) : (

@@ -47,17 +47,22 @@ const {
 } = createEventHandler<string, Stream<string>>();
 export { onAddTagToQuery, onRemoveTagFromQuery };
 
-// TODO: remove
-queryTagAdds$.subscribe({
-  next: v => console.log("onAdd", v),
-});
+const { handler: setTagQuery, stream: tagQuerySets$ } = createEventHandler<
+  string[],
+  Stream<string[]>
+>();
+export { setTagQuery };
 
 export const tagQuery$: MemoryStream<string[]> = xs
   .merge(
     queryTagAdds$.map(id => ({ type: "add" as "add", id })),
     queryTagRemoves$.map(id => ({ type: "remove" as "remove", id })),
+    tagQuerySets$.map(ids => ({ type: "set" as "set", ids })),
   )
   .fold((query: string[], event): string[] => {
+    if (event.type === "set") {
+      return event.ids;
+    }
     if (event.type === "add") {
       return _.uniq([...query, event.id]);
     } else {

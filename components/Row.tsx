@@ -1,10 +1,12 @@
 export default function Row({
   children,
   onClick,
+  onMouseDown,
   actionIcon,
 }: {
   children: React.ReactNode;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  onMouseDown?: (e: React.MouseEvent<HTMLDivElement>) => void;
   actionIcon: React.ReactNode;
 }) {
   return (
@@ -17,6 +19,7 @@ export default function Row({
         cursor: "pointer",
       }}
       onClick={onClick}
+      onMouseDown={onMouseDown}
     >
       <div
         style={{
