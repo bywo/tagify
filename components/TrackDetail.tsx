@@ -12,6 +12,7 @@ import { useState, useMemo } from "react";
 import SearchInput from "./SearchInput";
 import theme from "../theme";
 import Row from "./Row";
+import AlbumArt from "./AlbumArt";
 
 export default function TrackDetail({
   trackId,
@@ -102,14 +103,14 @@ export default function TrackDetail({
           <div
             style={{ display: "flex", alignItems: "center", marginBottom: 12 }}
           >
-            <img
+            <AlbumArt
               style={{
                 width: 60,
                 height: 60,
                 marginRight: 12,
                 background: "gray",
               }}
-              src={track.album.images[1].url}
+              album={track.album}
             />
             <div style={{ flexGrow: 1, flexBasis: 0 }}>
               <div

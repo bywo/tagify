@@ -10,6 +10,7 @@ import { MemoryStream } from "xstream";
 import Tag, { baseStyles } from "./Tag";
 import { setTagQuery, onChangeFocusedTrack } from "../data/UIStore";
 import PlaylistAdd from "@material-ui/icons/PlaylistAdd";
+import AlbumArt from "./AlbumArt";
 
 export default function Player({ token }: { token: string }) {
   const tagsByTrack = useXstream(tagsByTrack$ as MemoryStream<any>, {});
@@ -88,14 +89,14 @@ export default function Player({ token }: { token: string }) {
         ></div>
       </div>
       <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-        <img
+        <AlbumArt
           style={{
             width: 50,
             height: 50,
             marginRight: 12,
             background: "gray",
           }}
-          src={track.album.images[1].url}
+          album={track.album}
         />
         <div style={{ flexGrow: 1, flexBasis: 0 }}>
           <div
