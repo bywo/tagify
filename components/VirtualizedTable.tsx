@@ -32,6 +32,13 @@ export default function BasicTable({
 }) {
   const { play } = useSpotifyControls();
 
+  const playStartingFromTrack = (trackId: string) => {
+    const index = filteredTracks.findIndex(id => id === trackId);
+    console.log("found index", index);
+    const trackIdsToPlay = filteredTracks.slice(index, index + 50);
+    play(trackIdsToPlay);
+  };
+
   function renderItem(identifier: string) {
     const t = tracksById[identifier];
     const tagsForTrack = tagsByTrack[identifier];
@@ -56,7 +63,7 @@ export default function BasicTable({
         addTag={addTag}
         removeTag={removeTag}
         createAndAddTag={createAndAddTag}
-        play={play}
+        play={playStartingFromTrack}
         onClick={onClickTrack}
       />
     );

@@ -77,7 +77,7 @@ export default function TrackList(props: { style?: React.CSSProperties }) {
           padding: 12,
         }}
       >
-        <div style={{ fontWeight: 800, fontSize: "24px", marginBottom: 3 }}>
+        <div style={{ fontWeight: 800, fontSize: "24px", marginBottom: 6 }}>
           {tagQuery.length === 0 ? "Tracks" : "Tracks matching"}
         </div>
         <div
@@ -126,7 +126,7 @@ export default function TrackList(props: { style?: React.CSSProperties }) {
                 width: "100%",
                 zIndex: 2,
                 background: "rgba(255, 255, 255, 0.93)",
-                maxHeight: "calc(100vh - 50px)",
+                maxHeight: "calc(100vh - 220px)",
                 overflow: "auto",
                 border: "solid 1px #ccc",
                 borderRadius: 6,

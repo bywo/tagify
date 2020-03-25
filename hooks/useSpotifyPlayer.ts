@@ -100,7 +100,6 @@ const {
 const spotifySdkLoaded$ = spotifySdkLoadedChanges$.startWith(false);
 if (typeof window !== "undefined") {
   window.onSpotifyWebPlaybackSDKReady = () => {
-    console.log("bw: setting loaded true");
     setSpotifySdkLoaded(true);
   };
 }
@@ -347,12 +346,6 @@ pauses$.subscribe({
   next: () => {},
 });
 
-playerState$.subscribe({
-  next: val => {
-    console.log("bw: player state", val);
-  },
-});
-
 export function useSpotifyPlayer({
   token,
   playerName,
@@ -377,8 +370,6 @@ export function useSpotifyPlayer({
   useEffect(() => {
     setPlayerName(playerName);
   }, [playerName]);
-
-  console.log("bw: hook", { ready, playerState, devices });
 
   return {
     ready,

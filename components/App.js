@@ -9,9 +9,11 @@ import theme from "../theme";
 import { componentFromStream } from "../util/recompose";
 import * as playlist from "../data/PlaylistStore";
 import * as ui from "../data/UIStore";
+import * as user from "../data/UserStore";
 import TagSearchScreen from "./TagSearchScreen";
 import TrackDetail from "./TrackDetail";
 import LoadingScreen from "./LoadingScreen";
+import Player from "./Player";
 
 if (global.window) {
   window.playlist = playlist;
@@ -25,6 +27,7 @@ export default componentFromStream(() =>
       playlist.errorList$,
       ui.isSearchingByTags$,
       ui.focusedTrack$,
+      user.token$,
     )
     .map(
       ([
@@ -32,6 +35,7 @@ export default componentFromStream(() =>
         errorList,
         isSearchingByTags,
         focusedTrack,
+        token,
       ]) => (
         <div
           key="mainApp"
@@ -45,17 +49,45 @@ export default componentFromStream(() =>
         >
           {isPerformingInitialFetches ? (
             <LoadingScreen />
-          ) : focusedTrack != undefined ? (
-            <TrackDetail trackId={focusedTrack} />
           ) : (
-            <TrackList
-              style={{
-                flexGrow: 1,
-                overflow: "hidden",
-              }}
-            />
+            <div
+              style={{ display: "flex", flexDirection: "column", flexGrow: 1 }}
+            >
+              <div
+                style={{
+                  flexGrow: 1,
+                  position: "relative",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <TrackList
+                  style={{
+                    flexGrow: 1,
+                    width: "100%",
+                    height: "100%",
+                    overflow: "hidden",
+                    position: "relative",
+                    zIndex: 0,
+                  }}
+                />
+                {focusedTrack != undefined ? (
+                  <TrackDetail
+                    trackId={focusedTrack}
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      zIndex: 0,
+                    }}
+                  />
+                ) : null}
+              </div>
+              <Player token={token} />
+            </div>
           )}
-          {/* <Header /> */}
           <div
             style={{
               position: "fixed",

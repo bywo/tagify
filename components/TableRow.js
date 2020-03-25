@@ -63,7 +63,7 @@ export default class TableRow extends React.Component {
         // onMouseEnter={this.onMouseEnter}
         // onMouseLeave={this.onMouseLeave}
         onClick={() => {
-          this.props.play([track.uri]);
+          this.props.play(track.uri);
         }}
       >
         <div style={{ display: "flex" }}>

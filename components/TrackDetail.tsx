@@ -31,6 +31,15 @@ export default function TrackDetail({
   const tagsById = useXstream(playlist.tagsById$);
   const allTags = useXstream(playlist.playlists$ as MemoryStream<any[]>, []);
 
+  const tagNameMap = useMemo(() => {
+    const ret: { [k: string]: boolean } = {};
+    allTags.forEach(tag => {
+      ret[tag.name.toLowerCase()] = true;
+    });
+
+    return ret;
+  }, [tagsById, allTags]);
+
   // const [isEditingTags, setIsEditingTags] = useState(false);
   const isEditingTags = true;
   const [tagSearchText, onChangeTagSearchText] = useState("");
@@ -149,7 +158,8 @@ export default function TrackDetail({
           </SearchInput>
         </div>
         <div style={{ flexGrow: 1, flexBasis: 0, overflow: "auto" }}>
-          {tagSearchText.length > 0 && filtered.length === 0 ? (
+          {tagSearchText.length > 0 &&
+          !tagNameMap[tagSearchText.toLowerCase()] ? (
             <Row
               onClick={() => {
                 playlist.createAndAddTag({

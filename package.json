@@ -40,6 +40,7 @@
     "react-script-hook": "^1.0.15",
     "react-select": "^3.0.8",
     "recompose": "^0.30.0",
+    "use-interval": "^1.2.1",
     "use-resize-observer": "^6.0.0",
     "xstream": "^11.11.0"
   },
