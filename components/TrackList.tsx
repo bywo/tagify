@@ -173,6 +173,7 @@ export default function TrackList(props: { style?: React.CSSProperties }) {
         </div> */}
       </div>
       <Table
+        key={tagQuery.join("")}
         style={{ flexGrow: 1, flexBasis: 0 }}
         tagQuery={tagQuery}
         filteredTracks={filteredTracks}

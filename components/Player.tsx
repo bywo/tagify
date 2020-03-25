@@ -41,7 +41,6 @@ export default function Player({ token }: { token: string }) {
 
   useEffect(() => {
     if (isPlaying && progress != null) {
-      console.log("setting playstarted");
       setPlayStartedState({
         startTime: Date.now(),
         progressAtStart: progress,

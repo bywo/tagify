@@ -134,7 +134,6 @@ const player$ = xs
           player.addListener(
             "player_state_changed",
             (state: SdkPlayerState) => {
-              console.log(state);
               listener.next(state);
             },
           );
