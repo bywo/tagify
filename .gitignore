@@ -6,3 +6,4 @@ node_modules
 .DS_Store
 .now
 yarn-error.log
+src/visly
