@@ -1,5 +1,4 @@
 import React from "react";
-import as from "../util/as";
 import theme from "../theme";
 
 const scopes = [
@@ -24,6 +23,7 @@ export default class Login extends React.Component {
   }
 
   render() {
+    const redirectUrl = this.state.baseUrl + (this.props.redirectTo || "/");
     return (
       <div
         key="login"
@@ -78,8 +78,9 @@ export default class Login extends React.Component {
               marginTop: theme.spacing.xl,
               fontWeight: 600,
             }}
-            href={`https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=${this
-              .state.baseUrl + as("/callback")}&scope=${scopes.join("%20")}`}
+            href={`https://accounts.spotify.com/authorize?client_id=be37bc8bbe834aa4a98be0b8e7e89321&response_type=token&redirect_uri=${redirectUrl}&scope=${scopes.join(
+              "%20",
+            )}`}
           >
             Login with Spotify
           </a>

@@ -28,6 +28,9 @@ export default componentFromStream(() =>
       ui.isSearchingByTags$,
       ui.focusedTrack$,
       user.token$,
+
+      // NOTE: we need to subscribe. otherwise, the values won't get calculated
+      playlist.filteredTracks$.startWith(undefined),
     )
     .map(
       ([

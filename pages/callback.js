@@ -1,6 +1,5 @@
 import React from "react";
 import Router from "next/router";
-import as from "../util/as";
 
 import * as user from "../data/UserStore";
 import "../data/PlaylistStore";
@@ -11,7 +10,7 @@ export default class SpotifyAuth extends React.Component {
     if (matches) {
       user.onToken(matches[1]);
       const path = "/";
-      Router.push(path, as(path));
+      Router.push(path, path);
     }
   }
 

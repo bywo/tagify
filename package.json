@@ -21,10 +21,13 @@
     "@rooks/use-timeout": "^3.6.0",
     "@types/react": "^16.9.23",
     "@types/recompose": "^0.30.7",
+    "@types/spotify-api": "^0.0.3",
     "@zeit/next-css": "^1.0.1",
     "dexie": "^2.0.4",
+    "file-saver": "^2.0.2",
     "gh-pages": "^2.2.0",
     "husky": "^4.2.3",
+    "jszip": "^3.4.0",
     "lodash": "^4.17.15",
     "mobx": "^5.15.4",
     "mobx-react": "^6.1.8",
@@ -45,6 +48,9 @@
     "xstream": "^11.11.0"
   },
   "devDependencies": {
+    "@types/csv-stringify": "^3.1.0",
+    "@types/file-saver": "^2.0.1",
+    "@types/jszip": "^3.1.7",
     "@types/lodash": "^4.14.149",
     "@types/node": "^13.7.7",
     "@types/react-responsive": "^8.0.2",

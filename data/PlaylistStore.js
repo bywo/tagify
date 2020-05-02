@@ -382,28 +382,10 @@ export const tracksById$ = xs
     }
     return Promise.resolve({});
   })
-  .debug("tracksById")
   .map(xs.fromPromise)
   .flatten()
+  .debug("tracksById")
   .remember();
-
-tracksById$.subscribe({
-  next: () => {},
-});
-
-const trackIdsFilteredByQueryTags$ = xs
-  .combine(ui.tagQuery$, playlistTracks$)
-  .map(([query, playlistTracks]) => {
-    const trackIds = _.uniq(
-      query.flatMap(id => {
-        const playlistTrack = playlistTracks.find(
-          pt => pt.id === selectedPlaylist,
-        );
-
-        return playlistTrack ? playlistTrack.trackIds : [];
-      }),
-    );
-  });
 
 export const tagsWithNumOverlapping$ = xs
   .combine(ui.tagQuery$, playlists$, playlistTracks$)
@@ -429,12 +411,11 @@ export const tagsWithNumOverlapping$ = xs
           numOverlapping: _.intersection(trackIdsInQuery, trackIds).length,
         };
       });
-    } else {
-      return playlists.map(p => ({
-        tag: p,
-        numOverlapping: p.tracks.total,
-      }));
     }
+    return playlists.map(p => ({
+      tag: p,
+      numOverlapping: p.tracks.total,
+    }));
   })
   .debug("tagsWithNum")
   .remember();
@@ -479,17 +460,8 @@ export const filteredTracks$ = xs
       return track && trackMatchesQuery(track, searchText);
     });
   })
+  .debug(() => console.log("refiltered tracks"))
   .remember();
-
-filteredTracks$.addListener({
-  next() {
-    console.log("refiltered tracks");
-  },
-
-  error(err) {
-    console.log("error filtering tracks", err);
-  },
-});
 
 function trackMatchesQuery(track, query) {
   return (
