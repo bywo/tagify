@@ -11,6 +11,9 @@ db.version(2).stores({
   artists: `&id`,
   audioFeatures: `&id`,
 });
+db.version(3).stores({
+  savedTracks: `&id`,
+});
 
 export const misc: Dexie.Table<any, string> = db.table("misc");
 export const playlists: Dexie.Table<
@@ -31,6 +34,10 @@ export const audioFeatures: Dexie.Table<
   SpotifyApi.AudioFeaturesObject,
   string
 > = db.table("audioFeatures");
+export const savedTracks: Dexie.Table<
+  SpotifyApi.AudioFeaturesObject,
+  string
+> = db.table("savedTracks");
 
 declare global {
   interface Window {
@@ -48,4 +55,9 @@ export interface PlaylistTrack {
   id: string;
   snapshot_id: string;
   trackIds: string[];
+}
+
+export interface SavedTrack {
+  id: string;
+  added_at: Date;
 }

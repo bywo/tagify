@@ -6,13 +6,13 @@ import * as ui from "../data/UIStore";
 import theme from "../theme";
 import { Subscribable } from "recompose";
 import useXstream from "../hooks/useXstream";
-import { playlists$ } from "../data/PlaylistStore";
+import { tags$ } from "../data/PlaylistStore";
 import * as _ from "lodash";
 import Tag from "./Tag";
 
 export default function SearchBar(props: any) {
   const query = useXstream(ui.tagQuery$);
-  const playlists = useXstream(playlists$ as MemoryStream<any[]>);
+  const tags = useXstream(tags$ as MemoryStream<any[]>);
 
   if (!query) {
     return null;
@@ -40,7 +40,7 @@ export default function SearchBar(props: any) {
         }}
       >
         {query.map(id => {
-          const playlist = _.find(playlists, { id });
+          const playlist = _.find(tags, { id });
           return <Tag name={playlist.name} id={id} />;
         })}
         <input

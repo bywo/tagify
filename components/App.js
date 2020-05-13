@@ -10,7 +10,6 @@ import { componentFromStream } from "../util/recompose";
 import * as playlist from "../data/PlaylistStore";
 import * as ui from "../data/UIStore";
 import * as user from "../data/UserStore";
-import TagSearchScreen from "./TagSearchScreen";
 import TrackDetail from "./TrackDetail";
 import LoadingScreen from "./LoadingScreen";
 import Player from "./Player";

@@ -21,32 +21,32 @@ import Row from "./Row";
 
 export default function TrackList(props: { style?: React.CSSProperties }) {
   const filteredTracks = useXstream(playlist.filteredTracks$, []);
-  const playlists = useXstream(playlist.playlists$ as MemoryStream<any[]>, []);
+  const tags = useXstream(playlist.tags$ as MemoryStream<any[]>, []);
   const tagsByTrack = useXstream(playlist.tagsByTrack$, {});
   const tracksById = useXstream(playlist.tracksById$, {});
   const tagQuery = useXstream(ui.tagQuery$, []);
-  const tagsById = useXstream(playlist.tagsById$);
+  const tagsById = useXstream(playlist.tagsById$, {});
   const tagSearchText = useXstream(ui.tagSearchText$, "");
   const isSearchingByTags = useXstream(ui.isSearchingByTags$, false);
 
-  const tagSelectOptions = playlists.map(p => ({
+  const tagSelectOptions = tags.map(p => ({
     label: p.name,
     value: p.id,
     color: randomMC.getColor({ text: p.id }),
   }));
   const tagSelectOptionsMap = _.keyBy(tagSelectOptions, "value");
 
-  const tags = useXstream(
+  const tagsWithNumOverlapping = useXstream(
     playlist.tagsWithNumOverlapping$ as MemoryStream<any[]>,
     [],
   );
   const filtered = tagSearchText
-    ? tags.filter(t =>
+    ? tagsWithNumOverlapping.filter(t =>
         t.tag.name
           .toLocaleLowerCase()
           .includes(tagSearchText.toLocaleLowerCase()),
       )
-    : tags;
+    : tagsWithNumOverlapping;
 
   const sorted = useMemo(
     () => _.orderBy(filtered, ["numOverlapping"], ["desc"]),

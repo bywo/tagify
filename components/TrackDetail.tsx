@@ -30,7 +30,7 @@ export default function TrackDetail({
     {},
   );
   const tagsById = useXstream(playlist.tagsById$);
-  const allTags = useXstream(playlist.playlists$ as MemoryStream<any[]>, []);
+  const allTags = useXstream(playlist.tags$ as MemoryStream<any[]>, []);
 
   const tagNameMap = useMemo(() => {
     const ret: { [k: string]: boolean } = {};
@@ -46,7 +46,8 @@ export default function TrackDetail({
   const [tagSearchText, onChangeTagSearchText] = useState("");
 
   const tagsForTrack = tagsByTrack[trackId];
-  const tags = tagsForTrack ? tagsForTrack.map(tag => tagsById[tag]) : [];
+  const tags =
+    tagsForTrack && tagsById ? tagsForTrack.map(tag => tagsById[tag]) : [];
 
   const eligibleTags = useMemo(
     () => allTags.filter(t => tagsForTrack && !tagsForTrack.includes(t.id)),

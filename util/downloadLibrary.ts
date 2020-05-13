@@ -11,6 +11,7 @@ import {
 import stringify from "csv-stringify/lib/sync";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
+import { fetchPlaylistTracks, fetchPlaylists } from "../data/api";
 
 const originalFetch = typeof window !== "undefined" ? window.fetch : undefined;
 function makeFetch(token: string) {
@@ -39,53 +40,6 @@ function makeFetch(token: string) {
     }
     return resp;
   };
-}
-
-async function fetchAllPlaylists(
-  fetch: ReturnType<typeof makeFetch>,
-): Promise<SpotifyApi.PlaylistObjectSimplified[]> {
-  const limit = 50;
-  async function fetchPlaylists(
-    offset = 0,
-  ): Promise<{
-    items: SpotifyApi.PlaylistObjectSimplified[];
-    total: number;
-  }> {
-    const resp = await fetch(
-      `https://api.spotify.com/v1/me/playlists?limit=${limit}&offset=${offset}`,
-    );
-    return resp.json() as Promise<
-      SpotifyApi.ListOfCurrentUsersPlaylistsResponse
-    >;
-  }
-  const { items: firstPage, total } = await fetchPlaylists();
-  const offsets = _.range(limit, total, limit);
-  const subsequentPages = await Promise.all(
-    offsets.map(offset => fetchPlaylists(offset).then(({ items }) => items)),
-  );
-
-  return _.flatten([firstPage, ...subsequentPages]);
-}
-
-async function fetchAllTracksOfPlaylist(
-  fetch: ReturnType<typeof makeFetch>,
-  playlistId: string,
-  total: number,
-): Promise<SpotifyApi.TrackObjectFull[]> {
-  const limit = 100;
-  const offsets = _.range(0, total, limit);
-  const allPages = await Promise.all(
-    offsets.map(offset =>
-      fetch(
-        `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=${limit}&offset=${offset}`,
-      )
-        .then(resp => resp.json())
-        .then((body: SpotifyApi.PlaylistTrackResponse) =>
-          body.items.map(pt => pt.track),
-        ),
-    ),
-  );
-  return _.flatten(allPages);
 }
 
 async function fetchArtists(
@@ -132,7 +86,7 @@ export async function downloadLibrary() {
     .then(arr => _.keyBy(arr, "id"));
 
   // fetch playlists
-  const playlistsP = fetchAllPlaylists(fetch);
+  const playlistsP = fetchPlaylists(fetch);
 
   const [cachedPlaylistTracks, fetchedPlaylists] = await Promise.all([
     cachedPlaylistTracksP,
@@ -150,7 +104,7 @@ export async function downloadLibrary() {
   const fetchedTracks = _.flatten(
     await Promise.all(
       playlistTracksToFetch.map(p => {
-        const tracksP = fetchAllTracksOfPlaylist(fetch, p.id, p.tracks.total);
+        const tracksP = fetchPlaylistTracks(fetch, p.id, p.tracks.total);
 
         // save snapshotId and trackIds to cache
         tracksP.then(tracks =>
