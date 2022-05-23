@@ -23,7 +23,7 @@
     "@types/recompose": "^0.30.7",
     "@types/spotify-api": "^0.0.3",
     "@zeit/next-css": "^1.0.1",
-    "dexie": "^2.0.4",
+    "dexie": "^3.2.2",
     "file-saver": "^2.0.2",
     "gh-pages": "^2.2.0",
     "husky": "^4.2.3",
